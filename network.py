@@ -1,11 +1,23 @@
 from threading import Thread, Event
 from collections import namedtuple
-import msgpack
+try:
+    import msgpack
+    _packer = msgpack.Packer()
+    _unpacker = msgpack.Unpacker()
+    pack = _packer.pack
+    unpack = _unpacker.unpack
+except ImportError:
+    import json
+    _packer = json.JSONEncoder()
+    _unpacker = json.JSONDecoder()
+    pack = _packer.encode
+    unpack = _unpacker.decode
+
+__all__ = ('Message', 'Host', 'RemoteObject')
 
 Message = namedtuple('Message', ['action', 'id', 'args', 'kwargs'])
 
 class Host(object):
-    packer = msgpack.Packer()
     msg_id = 0
     def __getattr__(self, name):
         parts = name.split('_')
@@ -17,7 +29,7 @@ class Host(object):
     def send(self, action, *args, **kwargs):
         msg_id = self.msg_id
         msg = Message(action, msg_id, args, kwargs)
-        print 'msg:', msg, 'len:', len(self.packer.pack(msg))
+        print 'msg:', msg, 'len:', len(pack(msg))
         self.msg_id = msg_id + 1
         return msg_id
 
