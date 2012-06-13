@@ -1,6 +1,9 @@
 from threading import Thread, Event
 from collections import namedtuple
+import weakref
+import enet
 try:
+    raise ImportError
     import msgpack
     _packer = msgpack.Packer()
     _unpacker = msgpack.Unpacker()
@@ -13,25 +16,21 @@ except ImportError:
     pack = _packer.encode
     unpack = _unpacker.decode
 
-__all__ = ('Message', 'Host', 'RemoteObject')
-
-Message = namedtuple('Message', ['action', 'id', 'args', 'kwargs'])
+__all__ = ('PacketManager', 'Host', 'RemoteObject')
 
 class Host(object):
-    msg_id = 0
+    peer = None
+    channel = None
+
     def __getattr__(self, name):
-        parts = name.split('_')
+        parts = name.split('_', 1)
         if len(parts) == 2 and parts[0] == 'net' and len(parts[1]) > 0:
             return lambda *args, **kwargs: self.send(parts[1], *args, **kwargs)
         else:
             raise AttributeError("'%s' object has no attribute '%s'" % (type(self).__name__, name))
 
-    def send(self, action, *args, **kwargs):
-        msg_id = self.msg_id
-        msg = Message(action, msg_id, args, kwargs)
-        print 'msg:', msg, 'len:', len(pack(msg))
-        self.msg_id = msg_id + 1
-        return msg_id
+    def send(self, packet, *args, **kwargs):
+        return PacketManager.send(self.peer, self.channel, packet, *args, **kwargs)
 
 class RemoteObject(object):
     synch = ()
@@ -53,3 +52,31 @@ class Player(RemoteObject):
         super(Player, self).__init__()
         self.name = 'test'
         self.x = self.y = 0
+
+class PacketManager(object):
+    packets = {}
+    packets_params = weakref.WeakKeyDictionary()
+    type_id_cnt = 0
+    packet_cnt = 0
+
+    @staticmethod
+    def register(name, field_names, flags = enet.PACKET_FLAG_RELIABLE):
+        type_id = PacketManager.type_id_cnt + 1
+        cls = namedtuple(name, field_names)
+        PacketManager.packets[name] = cls
+        PacketManager.packets_params[cls] = (type_id, flags)
+        PacketManager.type_id_cnt = type_id
+        return cls
+
+    @staticmethod
+    def send(peer, channel, packet, *args, **kwargs):
+        if isinstance(packet, basestring):
+            packet = PacketManager.packets[packet](*args, **kwargs)
+        packet_id = (PacketManager.packet_cnt + 1) % 256
+        type_id, flags = PacketManager.packets_params[packet.__class__]
+        packet = (type_id, packet_id) + packet
+        print pack(packet)
+        #e_packet = enet.Packet(pack(packet), flags)
+        #peer.send(channel, e_packet)
+        PacketManager.packet_cnt = packet_id
+        return packet_id
