@@ -1,10 +1,18 @@
-from weakref import WeakKeyDictionary
 from packets import *
 
-REMOTEOBJECT_MODE_AUTO = 0
-REMOTEOBJECT_MODE_MANUAL = 1
-
 class Host(object):
+    """class allowing to send messages and packets
+
+    peer - connection to send packet over
+    channel - channel of connection
+
+    examples:
+        host = Host()
+        # chat_msg packet is defined in packets module
+        host.net_chat_msg('Tom', 'Test message')
+        # alternative
+        host.send(packets.chat_msg('Tom', 'Test message'))
+    """
     peer = None
     channel = None
 
@@ -16,57 +24,13 @@ class Host(object):
             raise AttributeError("'%s' object has no attribute '%s'" % (type(self).__name__, name))
 
     def send(self, packet, *args, **kwargs):
-        return PacketManager.send(self.peer, self.channel, packet, *args, **kwargs)
+        """send packet
 
-class RemoteObject(object):
-    sync_var = ()
-    sync_mode = REMOTEOBJECT_MODE_AUTO
-    sync_flags = 0
+        Host.send(packet, *args, **kwargs): return int
 
-    def __init__(self, *args, **kwargs):
-        super(RemoteObject, self).__init__(*args, **kwargs)
-        RemoteObjectManager.register(self)
+        packet - object of class created by register or name of packet
 
-    def __setattr__(self, name, value):
-        object.__setattr__(self, name, value)
-        if name in self.sync_var:
-            RemoteObjectManager.changed(self, name)
-
-    def on_change(self):
-        """callback when variable(s) was changed by remote host, should be overridden
+        When packet is name, args and kwargs are used to initialize packet object.
+        Returns packet id which can be used to retrieve response from Pygame event queue.
         """
-        pass
-
-    def send_changes(self):
-        pass
-
-class RemoteObjectManager(object):
-    known_types = {}
-    remote_objs = WeakKeyDictionary()
-    type_id_cnt = 0
-    obj_id_cnt = 0
-
-    @classmethod
-    def register(cls, obj):
-        try:
-            type_id = cls.known_types[obj.__class__]
-        except KeyError:
-            type_id = cls.type_id_cnt + 1
-            cls.known_types[obj.__class__] = type_id
-            cls.type_id_cnt = type_id
-        obj_id = cls.obj_id_cnt + 1
-        cls.remote_objs[obj] = (type_id, obj_id, [False]*len(obj.sync_var))
-        cls.obj_id_cnt = obj_id
-
-    def changed(cls, obj, var_name):
-        cls.remote_objs[obj] # TODO: finish this
-
-# TODO: pushing update packets from RemoteObject
-# TODO: mapping obj type and variables to ints
-
-class Player(RemoteObject):
-    synch = ('x', 'y')
-    def __init__(self):
-        super(Player, self).__init__()
-        self.name = 'test'
-        self.x = self.y = 0
+        return PacketManager.send(self.peer, self.channel, packet, *args, **kwargs)
