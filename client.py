@@ -1,20 +1,20 @@
 from packets import *
 
 class Host(object):
-    """class allowing to send messages and packets
-
+    """Class allowing to send messages and packets
+    
     peer - connection to send packet over
     channel - channel of connection
 
-    examples:
+    example:
         host = Host()
         # chat_msg packet is defined in packets module
         host.net_chat_msg('Tom', 'Test message')
         # alternative
         host.send(packets.chat_msg('Tom', 'Test message'))
     """
-    peer = None
-    channel = None
+    peer = None #: connection to send packet over
+    channel = None #: channel of connection
 
     def __getattr__(self, name):
         parts = name.split('_', 1)
@@ -24,7 +24,7 @@ class Host(object):
             raise AttributeError("'%s' object has no attribute '%s'" % (type(self).__name__, name))
 
     def send(self, packet, *args, **kwargs):
-        """send packet
+        """Send packet to remote host
 
         Host.send(packet, *args, **kwargs): return int
 

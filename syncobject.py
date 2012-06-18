@@ -5,7 +5,7 @@ SYNCOBJECT_MODE_AUTO = 0
 SYNCOBJECT_MODE_MANUAL = 1
 
 class SyncObject(object):
-    """base class for synchronized objects
+    """Base class for synchronized objects
 
     The base class for local objects to be automatically
     synchronized with remote host. Derived class should replace sync_var
@@ -30,64 +30,65 @@ class SyncObject(object):
             SyncObjectManager.changed(self, name)
 
     def on_change(self):
-        """callback when variable(s) was changed by remote host
+        """Callback when variable(s) was changed by remote host
         """
         pass
 
     def on_reply(self, packet_id):
-        """callback when there was reply to change from remote host
+        """Callback when there was reply to change from remote host
         """
         pass
 
     def send_changes(self):
-        """prepare update packet to send
+        """Prepare update packet to send
 
-        When sync_mode is SYNCOBJECT_MODE_MANUAL, notify SyncObjectManager to
-        prepare update packet
+        When sync_mode is SYNCOBJECT_MODE_MANUAL,
+        notify SyncObjectManager to prepare update packet
         """
         pass
 
     def notify_change(self, var_name):
-        """notify SyncObjectManager that variable was changed
+        """Notify SyncObjectManager that variable was changed
         """
         SyncObjectManager.changed(self, var_name)
 
 class SyncObjectManager(object):
-    """manager of SyncObject instances, shouldn't be used by user
+    """Manager of SyncObject instances, shouldn't be used by user
 
-    Class used by SyncObject automatically, no need to use it.
+    note:
+        Class used by SyncObject automatically, no need to use it.
     """
-    known_types = {}
-    remote_objs = WeakKeyDictionary()
-    type_id_cnt = 0
-    obj_id_cnt = 0
+    _known_types = {}
+    _sync_objs = WeakKeyDictionary()
+    _type_id_cnt = 0
+    _obj_id_cnt = 0
 
     @classmethod
     def register(cls, obj):
-        """registers new object deriving from SyncObject
+        """Registers new object deriving from SyncObject
         """
         try:
-            type_id = cls.known_types[obj.__class__]
+            type_id = cls._known_types[obj.__class__]
         except KeyError:
-            type_id = cls.type_id_cnt + 1
-            cls.known_types[obj.__class__] = type_id
-            cls.type_id_cnt = type_id
-        obj_id = cls.obj_id_cnt + 1
-        cls.remote_objs[obj] = (type_id, obj_id, [False]*len(obj.sync_var))
-        cls.obj_id_cnt = obj_id
+            type_id = cls._type_id_cnt + 1
+            cls._known_types[obj.__class__] = type_id
+            cls._type_id_cnt = type_id
+        obj_id = cls._obj_id_cnt + 1
+        cls._sync_objs[obj] = (type_id, obj_id, [False]*len(obj.sync_var))
+        cls._obj_id_cnt = obj_id
 
     @classmethod
     def changed(cls, obj, var_name):
-        """prepares update packet
+        """Prepares update packet
         """
-        cls.remote_objs[obj] # TODO: finish this
+        cls._sync_objs[obj] # TODO: finish this
         # TODO: push update packet to queue if in auto mode
 
 # TODO: pushing update packets from SyncObject
 # TODO: mapping obj type and variables to ints
 
 class RemoteObject(object):
-    """class representing remote SyncObject locally
+    """Class representing remote SyncObject locally
     """
     pass
 

@@ -5,32 +5,30 @@ try:
     import msgpack
     _packer = msgpack.Packer()
     _unpacker = msgpack.Unpacker()
-    pack = _packer.pack
-    unpack = _unpacker.unpack
+    _pack = _packer.pack
+    _unpack = _unpacker.unpack
 except ImportError:
     import json
     _packer = json.JSONEncoder()
     _unpacker = json.JSONDecoder()
-    pack = _packer.encode
-    unpack = _unpacker.decode
+    _pack = _packer.encode
+    _unpack = _unpacker.decode
 
 class PacketManager(object):
-    """manager of packets
+    """Class allowing to register new packet types and send them.
 
-    Class allowing to register new packet types and send them.
-
-    examples:
+    example:
         chat_msg = PacketManager.register('chat_msg', ('player', 'msg'), enet.PACKET_FLAG_RELIABLE)
         PacketManager.send(peer, 0, chat_msg('Tom', 'Test message'))
     """
-    packets = {}
-    packets_params = WeakKeyDictionary()
-    type_id_cnt = 0
-    packet_cnt = 0
+    _packets = {}
+    _packets_params = WeakKeyDictionary()
+    _type_id_cnt = 0
+    _packet_cnt = 0
 
     @classmethod
     def register(cls, name, field_names, flags=enet.PACKET_FLAG_RELIABLE):
-        """register new packet type
+        """Register new packet type
 
         PacketManager.register(name, field_names, flags): return class
 
@@ -40,18 +38,18 @@ class PacketManager(object):
 
         Returns namedtuple class.
         """
-        type_id = cls.type_id_cnt + 1
+        type_id = cls._type_id_cnt + 1
         packet = namedtuple(name, field_names)
-        cls.packets[name] = packet
-        cls.packets_params[packet] = (type_id, flags)
-        cls.type_id_cnt = type_id
+        cls._packets[name] = packet
+        cls._packets_params[packet] = (type_id, flags)
+        cls._type_id_cnt = type_id
         return packet
 
     @classmethod
     def send(cls, peer, channel, packet, *args, **kwargs):
-        """send packet
+        """Send packet
 
-        PacketManager.send(peer, channel, packet, *args, **kwargs): return int
+        PacketManager.send(peer, channel, packet, \*args, \*\*kwargs): return int
 
         peer - connection to send packet over
         channel - channel of connection
@@ -62,24 +60,24 @@ class PacketManager(object):
         """
         override_flags = kwargs.pop('flags', None)
         if isinstance(packet, basestring):
-            packet = cls.packets[packet](*args, **kwargs)
-        packet_id = (cls.packet_cnt + 1) % 256
-        type_id, flags = cls.packets_params[packet.__class__]
+            packet = cls._packets[packet](*args, **kwargs)
+        packet_id = (cls._packet_cnt + 1) % 256
+        type_id, flags = cls._packets_params[packet.__class__]
         flags = flags if override_flags is None else override_flags
         packet = (type_id, packet_id) + packet
-        print 'msg:', packet, 'len:', len(pack(packet))
-        #e_packet = enet.Packet(pack(packet), flags)
+        print 'msg:', packet, 'len:', len(_pack(packet))
+        #e_packet = enet.Packet(_pack(packet), flags)
         #peer.send(channel, e_packet)
-        cls.packet_cnt = packet_id
+        cls._packet_cnt = packet_id
         return packet_id
 
     @classmethod
     def get_packet(cls, name):
-        """returns packet class with given name
+        """Returns packet class with given name
 
         PacketManager.get_packet(name): return class
         """
-        return cls.packets[name]
+        return cls._packets[name]
 
 update_remoteobject = PacketManager.register('update_remoteobject', ('type_id', 'obj_id', 'variables'))
 chat_msg = PacketManager.register('chat_msg', ('player', 'msg'), enet.PACKET_FLAG_RELIABLE)
