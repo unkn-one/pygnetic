@@ -31,14 +31,14 @@
 
    .. attribute:: SyncObject.sync_mode
 
-      Synchronisation mode flags:
+      Synchronization mode flags:
       
       * update packet preparation mode
          * :const:`SYNCOBJECT_MODE_AUTO` - prepare update packet after every 
            variable assignment *(default)*
          * :const:`SYNCOBJECT_MODE_MANUAL` - wait with update packet 
            preparation for :meth:`send_changes` call
-      * acces mode
+      * access mode
          * :const:`SYNCOBJECT_MODE_READWRITE` - allow changes from 
            :class:`RemoteObject` to impact :class:`SyncObject` *(default)*
          * :const:`SYNCOBJECT_MODE_READONLY` - prevent changes from 

@@ -36,8 +36,8 @@ The source code is hosted on
    hg clone https://bitbucket.org/bluex/pygame-networking-gsoc2012
 
 
-Credists
---------
+Credits
+-------
 
 pygame_network is under development by Szymon Wróblewski <bluex0@gmail.com>
 as `GSoC 2012 <http://code.google.com/soc/>`_ project and mentored by
