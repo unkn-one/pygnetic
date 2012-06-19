@@ -12,7 +12,7 @@
    Sending is possible in two ways:
    
    * using :samp:`net_{packet_name}` methods, where :samp:`{packet_name}` 
-     is name of packet registered in :class:`PacketManager`  
+     is name of packet registered in :class:`packets.PacketManager`  
    * using ``send`` method with packet as argument
    
    Example::
@@ -26,12 +26,12 @@
    
    .. attribute:: Host.channel
    
-      channel of connection
+      Channel of enet connection
       
    
    .. attribute:: Host.peer
    
-      connection to send packet over
+      Enet connection to send packet over
       
    
    .. method:: Host.send(packet[ , \*args, \*\*kwargs])

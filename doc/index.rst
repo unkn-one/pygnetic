@@ -5,7 +5,7 @@ Welcome to Pygame network module documentation!
 :Release: |release|
 :Date: |today|
 
-The network module for `Pygame <http://www.pygame.org>`_ created as a
+Network module for `Pygame <http://www.pygame.org>`_ created as a
 `GSoC 2012 <http://code.google.com/soc/>`_ project.
 Uses `Pyenet <http://code.google.com/p/pyenet/>`_ for network communication and
 `Message Pack <http://msgpack.org/>`_ for data serialization.
