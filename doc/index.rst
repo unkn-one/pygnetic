@@ -1,32 +1,57 @@
-Welcome to Pygame network module documentation!
-===============================================
+``pygame_network`` - Easy networking in Pygame
+==============================================
 
-:Author: Szymon Wróblewski <bluex0@gmail.com>
-:Release: |release|
-:Date: |today|
+Network module for `Pygame <http://www.pygame.org>`_.
 
-Network module for `Pygame <http://www.pygame.org>`_ created as a
-`GSoC 2012 <http://code.google.com/soc/>`_ project.
-Uses `Pyenet <http://code.google.com/p/pyenet/>`_ for network communication and
+Installation
+------------
+This module uses `Pyenet <http://code.google.com/p/pyenet/>`_ for network communication and
 `Message Pack <http://msgpack.org/>`_ for data serialization.
 
-| Development blog: http://pygame-networking.blogspot.com
-| Repository: https://bitbucket.org/bluex/pygame-networking-gsoc2012
 
-Contents:
+Usage
+-----
+
+TODO
+
+
+Why should I use this module of X ?
+-----------------------------------
+
+TODO
+
+
+Support
+-------
+
+TODO
+
+
+Development
+-----------
+
+The source code is hosted on
+`Bitbucket <https://bitbucket.org/bluex/pygame-networking-gsoc2012>`_::
+
+   hg clone https://bitbucket.org/bluex/pygame-networking-gsoc2012
+
+
+Credists
+--------
+
+pygame_network is under development by Szymon Wróblewski <bluex0@gmail.com>
+as `GSoC 2012 <http://code.google.com/soc/>`_ project and mentored by
+René Dudfield <renesd@gmail.com>.
+
+Development blog can be found here: http://pygame-networking.blogspot.com
+
+
+Contents
+--------
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
+   :glob:
 
-   client
-   packets
-   syncobject
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
+   source/index
+   license
