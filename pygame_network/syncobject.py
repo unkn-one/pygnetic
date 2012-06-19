@@ -21,7 +21,7 @@ class SyncObject(object):
     sync_flags = None
 
     def __init__(self, *args, **kwargs):
-        super(RemoteObject, self).__init__(*args, **kwargs)
+        super(SyncObject, self).__init__(*args, **kwargs)
         SyncObjectManager.register(self)
 
     def __setattr__(self, name, value):
@@ -81,7 +81,8 @@ class SyncObjectManager(object):
     def changed(cls, obj, var_name):
         """Prepares update packet
         """
-        cls._sync_objs[obj] # TODO: finish this
+        print '%s@%s updated'%(var_name, obj)
+        # TODO: finish this
         # TODO: push update packet to queue if in auto mode
 
 # TODO: pushing update packets from SyncObject

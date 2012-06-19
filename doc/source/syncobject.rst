@@ -97,3 +97,29 @@
    
       Registers new object deriving from :class:`SyncObject`
 
+
+Example
+-------
+
+::
+
+   class Player(syncobject.SyncObject):
+       sync_var = ('pos', 'name')
+       def __init__(self):
+           super(Player, self).__init__()
+           self.name = 'test'
+           self.pos = [0, 0]
+           self.image = 'image1.png'
+   
+   player = Player()
+   player.name = 'foo' # update packet generated
+   player.image = 'image2.png' # no updates, variable isn't on sync list
+   # warning: examples below won't generate update, because
+   #          __getattr__ is not called
+   player.pos[0] = 10
+   player.pos.append(0)
+   # in this situation you should use notify_change
+   player.notify_change('pos')
+
+
+
