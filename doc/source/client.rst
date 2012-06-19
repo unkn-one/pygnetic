@@ -39,7 +39,7 @@
       Send packet to remote host
       
       :param packet: 
-         object of class created by :meth:`packet.register` or 
+         object of class created by :meth:`packets.PacketManager.register` or 
          name of packet (args and kwargs are used to initialize packet object)
       :rtype: 
          (int) packet id which can be used to retrieve response from 

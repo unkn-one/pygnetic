@@ -15,8 +15,8 @@ Usage
 TODO
 
 
-Why should I use this module of X ?
------------------------------------
+Why should I use this module instead of X ?
+-------------------------------------------
 
 TODO
 
