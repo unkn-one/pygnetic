@@ -1,8 +1,8 @@
-from weakref import WeakKeyDictionary
 from packets import *
 
 SYNCOBJECT_MODE_AUTO = 0
 SYNCOBJECT_MODE_MANUAL = 1
+
 
 class SyncObject(object):
     """Base class for synchronized objects
@@ -52,6 +52,7 @@ class SyncObject(object):
         """
         SyncObjectManager.changed(self, var_name)
 
+
 class SyncObjectManager(object):
     """Manager of SyncObject instances, shouldn't be used by user
 
@@ -74,19 +75,20 @@ class SyncObjectManager(object):
             cls._known_types[obj.__class__] = type_id
             cls._type_id_cnt = type_id
         obj_id = cls._obj_id_cnt + 1
-        cls._sync_objs[obj] = (type_id, obj_id, [False]*len(obj.sync_var))
+        cls._sync_objs[obj] = (type_id, obj_id, [False] * len(obj.sync_var))
         cls._obj_id_cnt = obj_id
 
     @classmethod
     def changed(cls, obj, var_name):
         """Prepares update packet
         """
-        print '%s@%s updated'%(var_name, obj)
+        print '%s@%s updated' % (var_name, obj)
         # TODO: finish this
         # TODO: push update packet to queue if in auto mode
 
 # TODO: pushing update packets from SyncObject
 # TODO: mapping obj type and variables to ints
+
 
 class RemoteObject(object):
     """Class representing remote SyncObject locally

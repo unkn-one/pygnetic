@@ -14,11 +14,13 @@ except ImportError:
     _pack = _packer.encode
     _unpack = _unpacker.decode
 
+
 class PacketManager(object):
     """Class allowing to register new packet types and send them.
 
     example:
-        chat_msg = PacketManager.register('chat_msg', ('player', 'msg'), enet.PACKET_FLAG_RELIABLE)
+        chat_msg = PacketManager.register('chat_msg', ('player', 'msg'),
+                                          enet.PACKET_FLAG_RELIABLE)
         PacketManager.send(peer, 0, chat_msg('Tom', 'Test message'))
     """
     _packets = {}
@@ -55,8 +57,9 @@ class PacketManager(object):
         channel - channel of connection
         packet - object of class created by register or name of packet
 
-        When packet is name, args and kwargs are used to initialize packet object.
-        Returns packet id which can be used to retrieve response from Pygame event queue.
+        When packet is name, args and kwargs are used to initialize
+        packet object. Returns packet id which can be used to retrieve response
+        from Pygame event queue.
         """
         override_flags = kwargs.pop('flags', None)
         if isinstance(packet, basestring):
