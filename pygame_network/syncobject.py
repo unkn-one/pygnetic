@@ -1,4 +1,4 @@
-from packets import *
+from packet import *
 
 SYNCOBJECT_MODE_AUTO = 0
 SYNCOBJECT_MODE_MANUAL = 1
@@ -29,7 +29,7 @@ class SyncObject(object):
         if name in self.sync_var:
             SyncObjectManager.changed(self, name)
 
-    def on_change(self):
+    def on_change(self, var_names):
         """Callback when variable(s) was changed by remote host
         """
         pass

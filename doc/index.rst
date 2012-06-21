@@ -3,6 +3,16 @@
 
 Network module for `Pygame <http://www.pygame.org>`_.
 
+Contents
+--------
+
+.. toctree::
+   :maxdepth: 3
+   :glob:
+
+   source/index
+   license
+
 Installation
 ------------
 This module uses `Pyenet <http://code.google.com/p/pyenet/>`_ for network communication and
@@ -44,14 +54,3 @@ as `GSoC 2012 <http://code.google.com/soc/>`_ project and mentored by
 René Dudfield <renesd@gmail.com>.
 
 Development blog can be found here: http://pygame-networking.blogspot.com
-
-
-Contents
---------
-
-.. toctree::
-   :maxdepth: 2
-   :glob:
-
-   source/index
-   license

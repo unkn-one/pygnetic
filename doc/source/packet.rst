@@ -1,7 +1,7 @@
-:mod:`packets` Module
-=====================
+:mod:`packet` Module
+====================
 
-.. module:: packets
+.. module:: packet
    :synopsis: Packet manager and predefined packets.
 
 

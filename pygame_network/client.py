@@ -1,5 +1,7 @@
+from weakref import WeakKeyDictionary
 from functools import partial
-from packets import PacketManager
+from inspect import getmembers
+from packet import PacketManager
 
 
 class Host(object):
@@ -47,6 +49,27 @@ class Host(object):
                                   packet, *args, **kwargs)
 
 
-class Reciver(object):
-    def __init__(self):
-        pass
+class Receiver(object):
+    def __init__(self, *args, **kwargs):
+        super(Receiver, self).__init__(*args, **kwargs)
+        ReceiverManager.register(self)
+
+
+class ReceiverManager(object):
+    _rcvr_objs = WeakKeyDictionary()
+
+    @classmethod
+    def register(cls, obj):
+        # get names of supported packets by available methods
+        cls._rcvr_objs[obj] = tuple(
+            name[4:]
+            for name, _ in getmembers(obj, callable)
+            if name.startswith('net_')
+        )
+
+    @classmethod
+    def notify_all(cls, packet):
+        name = packet.__name__
+        for obj, packets in cls._rcvr_objs.iteritems():
+            if name in packets:
+                getattr(obj, 'net_' + name)(packet)
