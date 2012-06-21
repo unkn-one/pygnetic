@@ -1,5 +1,5 @@
-``pygame_network`` - Easy networking in Pygame
-==============================================
+``pygame_network`` --- Easy networking in Pygame
+================================================
 
 Network module for `Pygame <http://www.pygame.org>`_.
 

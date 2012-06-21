@@ -14,30 +14,30 @@ Events
 Connected event
    | ``event.type`` = :const:`NETWORK`
    | ``event.net_type`` = :const:`NET_CONNECTED`
-   | ``event.connection`` `proxy`_ to connection
+   | ``event.connection`` -- :func:`proxy <weakref.proxy>` to connection
 
 Disconnected event
    | ``event.type`` = :const:`NETWORK`
    | ``event.net_type`` = :const:`NET_DISCONNECTED`
-   | ``event.connection`` `proxy`_ to connection
+   | ``event.connection`` -- :func:`proxy <weakref.proxy>` to connection
 
 Received event
    | ``event.type`` = :const:`NETWORK`
    | ``event.net_type`` = :const:`NET_RECEIVED`
-   | ``event.connection`` `proxy`_ to connection
-   | ``event.channel`` channel of connection
-   | ``event.packet`` received packet
-   | ``event.p_id`` packet identifier
-   | ``event.p_type`` packet type
+   | ``event.connection`` -- :func:`proxy <weakref.proxy>` to connection
+   | ``event.channel`` -- channel of connection
+   | ``event.packet`` -- received packet
+   | ``event.p_id`` -- packet identifier
+   | ``event.p_type`` -- packet type
 
 Response event
    | ``event.type`` = :const:`NETWORK`
    | ``event.net_type`` = :const:`NET_RESPONSE`
-   | ``event.connection`` `proxy`_ to connection
-   | ``event.channel`` channel of connection
-   | ``event.packet`` received packet
-   | ``event.p_id`` packet identifier
-   | ``event.p_type`` packet type
+   | ``event.connection`` -- :func:`proxy <weakref.proxy>` to connection
+   | ``event.channel`` -- channel of connection
+   | ``event.packet`` -- received packet
+   | ``event.p_id`` -- packet identifier
+   | ``event.p_type`` -- packet type
 
 Example::
 
@@ -71,4 +71,4 @@ Functions
       (default :const:`enet.PACKET_FLAG_RELIABLE`)
    :rtype: (named tuple) packet
    
-.. _proxy: http://docs.python.org/library/weakref.html#weakref.proxy
+   
