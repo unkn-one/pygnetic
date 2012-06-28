@@ -7,13 +7,14 @@ try:
     _packer = msgpack.Packer()
     _unpacker = msgpack.Unpacker()
     _pack = _packer.pack
-    _unpack = _unpacker.unpack
+    _unpack = lambda data: _unpacker.feed(data) or _unpacker.unpack()
 except ImportError:
     import json
     _packer = json.JSONEncoder()
     _unpacker = json.JSONDecoder()
     _pack = _packer.encode
     _unpack = _unpacker.decode
+
 _logger = logging.getLogger(__name__)
 
 __all__ = ('PacketManager', 'PacketError')
@@ -37,18 +38,26 @@ class PacketManager(object):
     _type_id_cnt = 0
     _frozen = False
 
+    def __init__(self):
+        # override class variables with instance variables
+        cls = self.__class__
+        self._packet_names = cls._packet_names.copy()
+        self._packet_types = cls._packet_types.copy()
+        self._packet_params = cls._packet_params.copy()
+        self._type_id_cnt = cls._type_id_cnt
+        self._frozen = False
+
     @classmethod
-    def register(cls, name, field_names, **kwargs):
+    def register(cls, name, field_names, channel=0, flags=enet.PACKET_FLAG_RELIABLE):
         """Register new packet type
 
-        PacketManager.register(name, field_names, **kwargs): return class
+        PacketManager.register(name, field_names, channel, flags): return class
 
         name - name of packet class
         field_names - names of packet fields
-        kwargs - keyword arguments for sending with enet
 
         Warning: All packets must be registered in THE SAME ORDER in client and
-        server, BEFORE creating Client / Server objects.
+        server, BEFORE creating any connection.
 
         Returns namedtuple class.
         """
@@ -59,25 +68,22 @@ class PacketManager(object):
         packet = namedtuple(name, field_names)
         cls._packet_names[name] = packet
         cls._packet_types[type_id] = packet
-        cls._packet_params[packet] = (type_id, kwargs)
+        cls._packet_params[packet] = (type_id, channel, flags)
         cls._type_id_cnt = type_id
         return packet
 
     @classmethod
-    def pack(cls, packet_id, packet, *args, **kwargs):
+    def pack(cls, packet_id, packet):
         """Pack data to string
 
-        PacketManager.pack(packet_id, packet, *args, **kwargs): return string
+        PacketManager.pack(packet_id, packet_obj): return string
 
         packet_id - identifier of packet
-        packet - object of class created by register or name of packet
+        packet - object of class created by register
 
-        When packet is name, args and kwargs are used to initialize
-        packet object. Returns packet packed in string, ready to send.
+        Returns packet packed in string, ready to send.
         """
-        if isinstance(packet, basestring):
-            packet = cls._packets[packet](*args, **kwargs)
-        type_id = cls._packets_params[packet.__class__].type_id
+        type_id = cls._packet_params[packet.__class__][0]
         packet = (type_id, packet_id) + packet
         cls._packet_cnt = packet_id
         return _pack(packet)
@@ -105,6 +111,8 @@ class PacketManager(object):
         """Returns packet class with given name
 
         PacketManager.get_by_name(name): return class
+
+        name - name of packet
         """
         return cls._packet_names[name]
 
@@ -113,16 +121,33 @@ class PacketManager(object):
         """Returns packet class with given type_id
 
         PacketManager.get_by_type(name): return class
+
+        type_id - type identifier of packet
         """
         return cls._packet_types[type_id]
 
     @classmethod
     def get_params(cls, packet):
-        """Return tuple containing type_id and sending keyword arguments
+        """Return tuple containing type_id, channel and sending flags
 
-        PacketManager.get_params(packet): return (int, dict)
+        PacketManager.get_params(packet): return (int, int, int)
+
+        packet - packet class created by register
         """
-        return cls._packet_params[packet.__class__]
+        return cls._packet_params[packet]
+
+    @classmethod
+    def get_hash(cls):
+        if cls._frozen:
+            ids = cls._packet_types.keys()
+            ids.sort()
+            l = list()
+            for i in ids:
+                p = cls._packet_types[i]
+                l.append((i, p.__name__, p._fields))
+            return hash(tuple(l)) % 2 ** 32  # sometimes negative ??
+        else:
+            _logger.warning('Attempt to get hash of not frozen PacketManager')
 
 
 connect_request = PacketManager.register('connect_request', (
@@ -132,8 +157,8 @@ update_remoteobject = PacketManager.register('update_remoteobject', (
     'type_id',
     'obj_id',
     'variables'
-))
+), 1, 0)
 chat_msg = PacketManager.register('chat_msg', (
     'player',
     'msg'
-), enet.PACKET_FLAG_RELIABLE)
+))

@@ -1,3 +1,4 @@
+from weakref import WeakKeyDictionary
 from packet import *
 
 SYNCOBJECT_MODE_AUTO = 0
@@ -95,4 +96,4 @@ class RemoteObject(object):
     """
     pass
 
-# TODO: add methods faking SyncObject atributes
+# TODO: add methods faking SyncObject attributes
