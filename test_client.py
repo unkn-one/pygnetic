@@ -1,4 +1,4 @@
-import os
+import random
 import logging
 import enet
 import pygame_network
@@ -18,8 +18,8 @@ counter = 0
 print 'client started'
 while connection.connection.state != enet.PEER_STATE_DISCONNECTED:
     client.step()
-    if counter < MSG_NUMBER:
-        msg = os.urandom(10)
+    if counter < MSG_NUMBER and connection.connection.state == enet.PEER_STATE_CONNECTED:
+        msg = ''.join(random.sample('abcdefghijklmnopqrstuvwxyz', 10))
         print("%s: out: %r" % (connection.connection.address, msg))
         connection.net_echo(msg)
         counter += 1

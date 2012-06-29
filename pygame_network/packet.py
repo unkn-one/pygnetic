@@ -145,7 +145,8 @@ class PacketManager(object):
             for i in ids:
                 p = cls._packet_types[i]
                 l.append((i, p.__name__, p._fields))
-            return hash(tuple(l)) % 2 ** 32  # sometimes negative ??
+            return hash(tuple(l)) & 0xffffffff
+            # should be the same on 32 & 64 platforms
         else:
             _logger.warning('Attempt to get hash of not frozen PacketManager')
 
