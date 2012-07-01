@@ -16,10 +16,10 @@ connection = client.connect("localhost", 54301)
 
 counter = 0
 print 'client started'
-while connection.connection.state != enet.PEER_STATE_DISCONNECTED:
+while connection.state != enet.PEER_STATE_DISCONNECTED:
     client.step()
-    if counter < MSG_NUMBER and connection.connection.state == enet.PEER_STATE_CONNECTED:
+    if counter < MSG_NUMBER and connection.state == enet.PEER_STATE_CONNECTED:
         msg = ''.join(random.sample('abcdefghijklmnopqrstuvwxyz', 10))
-        print("%s: out: %r" % (connection.connection.address, msg))
+        print("%s: out: %r" % (connection.peer.address, msg))
         connection.net_echo(msg)
         counter += 1

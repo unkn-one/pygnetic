@@ -4,9 +4,14 @@ from functools import partial
 from inspect import getmembers
 import enet
 from packet import PacketManager
-import event
 
 _logger = logging.getLogger(__name__)
+
+# dummy events
+def _connected_event(connection): pass
+def _disconnected_event(connection): pass
+def _received_event(connection, channel, packet, packet_id): pass
+def _response_event(connection, channel, packet, packet_id): pass
 
 
 class Client(object):
@@ -23,17 +28,19 @@ class Client(object):
         self._peers[peer.connectID] = connection  # TODO: Test connectID more
         return connection
 
-    def step(self):
+    def step(self, timeout=0):
         host = self.host
-        event = host.service(0)
+        event = host.service(timeout)
         while event is not None:
             if event.type == enet.EVENT_TYPE_CONNECT:
+                self._peers[event.peer.connectID]._connect()
                 _logger.info('Connected to %s', event.peer.address)
             elif event.type == enet.EVENT_TYPE_DISCONNECT:
+                self._peers[event.peer.connectID]._disconnect()
                 _logger.info('Disconnected from %s', event.peer.address)
             elif event.type == enet.EVENT_TYPE_RECEIVE:
+                self._peers[event.peer.connectID]._receive(event.packet.data, event.channelID)
                 _logger.info('Received data from %s', event.peer.address)
-                self._peers[event.peer.connectID]._receive(event.packet.data)
             event = host.check_events()
 
 
@@ -52,12 +59,12 @@ class Connection(object):
     """
 
     def __init__(self, peer, packet_manager=PacketManager):
-        self.connection = peer
+        self.peer = peer
         self._packet_cnt = 0
         self._packet_manager = packet_manager
 
     def __del__(self):
-        self.connection.disconnect_now()
+        self.peer.disconnect_now()
 
     def __getattr__(self, name):
         parts = name.split('_', 1)
@@ -96,41 +103,69 @@ class Connection(object):
         packet_id = self._packet_cnt = self._packet_cnt + 1
         packet = packet(*args, **kwargs)
         data = self._packet_manager.pack(packet_id, packet)
-        if self.connection.send(channel, enet.Packet(data, flags)):
+        if self.peer.send(channel, enet.Packet(data, flags)):
             return packet_id
 
-    def _receive(self, data):
+    def _receive(self, data, channel):
         packet_id, packet = self._packet_manager.unpack(data)
-        print 'packet #%d: %s' % (packet_id, packet)
+        _received_event(self, channel, packet, packet_id)
+        ReceiverManager.on_recive(self, channel, packet_id, packet)
 
-    def reset(self):
-        self.connection.reset()
+    def _connect(self):
+        _connected_event(self)
+        ReceiverManager.on_connect(self)
+
+    def _disconnect(self):
+        _disconnected_event(self)
+        ReceiverManager.on_disconnect(self)
 
     def disconnect(self):
-        self.connection.disconnect()
+        self.peer.disconnect()
+
+    @property
+    def state(self):
+        return self.peer.state
+
+
+class ReceiverManager(object):
+    _receivers = WeakKeyDictionary()
+
+    @classmethod
+    def register(cls, obj):
+        cls._receivers[obj] = None
+
+    @classmethod
+    def on_recive(cls, connection, channel, packet_id, packet):
+        name = packet.__class__.__name__
+        for obj in cls._receivers:
+            if obj.connection == connection:
+                getattr(obj, 'net_' + name, obj.on_recive)(channel, packet_id, packet)
+
+    @classmethod
+    def on_connect(cls, connection):
+        for obj in cls._receivers:
+            if obj.connection == connection:
+                obj.on_connect()
+
+    @classmethod
+    def on_disconnect(cls, connection):
+        for obj in cls._receivers:
+            if obj.connection == connection:
+                obj.on_disconnect()
 
 
 class Receiver(object):
+    connection = None
+
     def __init__(self, *args, **kwargs):
         super(Receiver, self).__init__(*args, **kwargs)
         ReceiverManager.register(self)
 
+    def on_connect(self):
+        pass
 
-class ReceiverManager(object):
-    _rcvr_objs = WeakKeyDictionary()
+    def on_disconnect(self):
+        pass
 
-    @classmethod
-    def register(cls, obj):
-        # get names of supported packets by available methods
-        cls._rcvr_objs[obj] = tuple(
-            name[4:]
-            for name, _ in getmembers(obj, callable)
-            if name.startswith('net_')
-        )
-
-    @classmethod
-    def notify_all(cls, packet):
-        name = packet.__name__
-        for obj, packets in cls._rcvr_objs.iteritems():
-            if name in packets:
-                getattr(obj, 'net_' + name)(packet)
+    def on_recive(self, channel, packet_id, packet):
+        pass
