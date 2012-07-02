@@ -7,9 +7,8 @@ PM._frozen = True
 
 host = enet.Host(enet.Address(b"localhost", 54301), 10, 0, 0, 0)
 
-connect_count = 0
 run = True
-shutdown_recv = False
+connections = {}
 while run:
     # Wait 1 second for an event
     event = host.service(1000)
@@ -17,7 +16,9 @@ while run:
         correct = event.data == PM.get_hash()
         print("%s: CONNECT, PacketManager hash %scorrect" % (
             event.peer.address, '' if correct else 'in'))
-        if not correct:
+        if correct:
+            connections[event.peer.incomingSessionID] = 0
+        else:
             event.peer.disconnect()
     elif event.type == enet.EVENT_TYPE_DISCONNECT:
         print("%s: DISCONNECT" % event.peer.address)
@@ -29,3 +30,6 @@ while run:
             print("%s: Error sending echo packet!" % event.peer.address)
         else:
             print("%s: OUT: %r" % (event.peer.address, msg))
+        connections[event.peer.incomingSessionID] += 1
+        if connections[event.peer.incomingSessionID] >= 10:
+            event.peer.disconnect_later()

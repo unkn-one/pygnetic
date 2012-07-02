@@ -1,7 +1,6 @@
 import logging
 from weakref import WeakKeyDictionary, WeakValueDictionary
 from functools import partial
-from inspect import getmembers
 import enet
 from packet import PacketManager
 
@@ -13,33 +12,51 @@ def _disconnected_event(connection): pass
 def _received_event(connection, channel, packet, packet_id): pass
 def _response_event(connection, channel, packet, packet_id): pass
 
+STATE_ACKNOWLEDGING_CONNECT = enet.PEER_STATE_ACKNOWLEDGING_CONNECT
+STATE_ACKNOWLEDGING_DISCONNECT = enet.PEER_STATE_ACKNOWLEDGING_DISCONNECT
+STATE_CONNECTED = enet.PEER_STATE_CONNECTED
+STATE_CONNECTING = enet.PEER_STATE_CONNECTING
+STATE_CONNECTION_PENDING = enet.PEER_STATE_CONNECTION_PENDING
+STATE_CONNECTION_SUCCEEDED = enet.PEER_STATE_CONNECTION_SUCCEEDED
+STATE_DISCONNECTED = enet.PEER_STATE_DISCONNECTED
+STATE_DISCONNECTING = enet.PEER_STATE_DISCONNECTING
+STATE_DISCONNECT_LATER = enet.PEER_STATE_DISCONNECT_LATER
+STATE_ZOMBIE = enet.PEER_STATE_ZOMBIE
+
 
 class Client(object):
     def __init__(self, connections_limit=1, channel_limit=0, in_bandwidth=0, out_bandwidth=0):
         self.host = enet.Host(None, connections_limit, channel_limit, in_bandwidth, out_bandwidth)
         self._peers = {}
+        self._peer_cnt = 0
 
     def connect(self, address, port, channels=2, packet_manager=PacketManager):
+        peer_id = self._peer_cnt = self._peer_cnt + 1
+        peer_id = str(peer_id)
         # Can't register packets after connection
         packet_manager._frozen = True
         address = enet.Address(address, port)
         peer = self.host.connect(address, channels, packet_manager.get_hash())
+        peer.data = peer_id
         connection = Connection(peer, packet_manager)
-        self._peers[peer.connectID] = connection  # TODO: Test connectID more
+        self._peers[peer_id] = connection  # TODO: Test incomingSessionID more
         return connection
 
     def step(self, timeout=0):
+        if len(self._peers) == 0:
+            return
         host = self.host
         event = host.service(timeout)
         while event is not None:
             if event.type == enet.EVENT_TYPE_CONNECT:
-                self._peers[event.peer.connectID]._connect()
+                self._peers[event.peer.data]._connect()
                 _logger.info('Connected to %s', event.peer.address)
             elif event.type == enet.EVENT_TYPE_DISCONNECT:
-                self._peers[event.peer.connectID]._disconnect()
+                self._peers[event.peer.data]._disconnect()
                 _logger.info('Disconnected from %s', event.peer.address)
+                del self._peers[event.peer.data]
             elif event.type == enet.EVENT_TYPE_RECEIVE:
-                self._peers[event.peer.connectID]._receive(event.packet.data, event.channelID)
+                self._peers[event.peer.data]._receive(event.packet.data, event.channelID)
                 _logger.info('Received data from %s', event.peer.address)
             event = host.check_events()
 
@@ -103,7 +120,7 @@ class Connection(object):
         packet_id = self._packet_cnt = self._packet_cnt + 1
         packet = packet(*args, **kwargs)
         data = self._packet_manager.pack(packet_id, packet)
-        if self.peer.send(channel, enet.Packet(data, flags)):
+        if self.peer.send(channel, enet.Packet(data, flags)) == 0:
             return packet_id
 
     def _receive(self, data, channel):
@@ -122,9 +139,16 @@ class Connection(object):
     def disconnect(self):
         self.peer.disconnect()
 
+    def disconnect_later(self):
+        self.peer.disconnect_later()
+
     @property
     def state(self):
         return self.peer.state
+
+    @property
+    def address(self):
+        return self.peer.address
 
 
 class ReceiverManager(object):

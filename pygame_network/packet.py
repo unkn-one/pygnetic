@@ -64,12 +64,11 @@ class PacketManager(object):
         if cls._frozen == True:
             raise PacketError("Can't register new packets after "\
                               "connection establishment")
-        type_id = cls._type_id_cnt + 1
+        type_id = cls._type_id_cnt = cls._type_id_cnt + 1
         packet = namedtuple(name, field_names)
         cls._packet_names[name] = packet
         cls._packet_types[type_id] = packet
         cls._packet_params[packet] = (type_id, channel, flags)
-        cls._type_id_cnt = type_id
         return packet
 
     @classmethod
