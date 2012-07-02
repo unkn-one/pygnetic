@@ -8,7 +8,7 @@ NETWORK = USEREVENT + 1
 NET_CONNECTED = 0
 NET_DISCONNECTED = 1
 NET_RECEIVED = 2
-NET_RESPONSE = 3
+NET_RESPONSE = 3  # TODO: response !!
 
 
 def _connected_event(connection):

@@ -45,6 +45,7 @@ def main():
     screen.blit(font.render('Client test', True, (255, 255, 255)), (10, 10))
     screen.blit(font.render('Connection:', True, (255, 255, 255)), (10, 35))
     screen.blit(font.render('Packets:', True, (255, 255, 255)), (10, 60))
+    screen.blit(font.render('SPACE - connect/disconnect  L - fps limiter on / off', True, (255, 255, 255)), (10, 570))
     connection_status(screen, (140, 38))
     pygame.display.flip()
 

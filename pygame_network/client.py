@@ -39,7 +39,7 @@ class Client(object):
         peer = self.host.connect(address, channels, packet_manager.get_hash())
         peer.data = peer_id
         connection = Connection(peer, packet_manager)
-        self._peers[peer_id] = connection  # TODO: Test incomingSessionID more
+        self._peers[peer_id] = connection
         return connection
 
     def step(self, timeout=0):
