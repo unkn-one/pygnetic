@@ -31,5 +31,3 @@ while run:
         else:
             print("%s: OUT: %r" % (event.peer.address, msg))
         connections[event.peer.incomingSessionID] += 1
-        if connections[event.peer.incomingSessionID] >= 10:
-            event.peer.disconnect_later()

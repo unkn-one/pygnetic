@@ -55,26 +55,30 @@ def main():
 
     # Variables
     run = True
+    limit = True
     packets = {}
     while run:
-
         events = pygame.event.get()
         for e in events:
-            if e.type == KEYDOWN and e.key == K_SPACE:
-                if connection is not None and connection.state == pygame_network.client.STATE_CONNECTED:
-                    connection.disconnect_later()
-                    connection_status(screen, (140, 38), None)
-                elif connection is None:
-                    connection = client.connect("localhost", 54301)
-                    connection_status(screen, (140, 38), False)
-                    packets = {}
-                    packet_status(screen, (110, 62), packets)
+            if e.type == KEYDOWN:
+                if e.key == K_SPACE:
+                    if connection is not None:
+                        if connection.state == pygame_network.client.STATE_CONNECTED:
+                            connection.disconnect_later()
+                            connection_status(screen, (140, 38), False)
+                    else:
+                        connection = client.connect("localhost", 54301)
+                        connection_status(screen, (140, 38), False)
+                if e.key == K_l:
+                    limit = not limit
             if e.type == NETWORK and e.connection == connection:
                 if e.net_type == NET_CONNECTED:
                     connection_status(screen, (140, 38), True)
                 elif e.net_type == NET_DISCONNECTED:
                     connection_status(screen, (140, 38), None)
                     connection = None
+                    packets = {}
+                    packet_status(screen, (110, 62), packets)
                 elif e.net_type == NET_RECEIVED:
                     if e.p_type == echo:
                         msg = e.packet.msg
@@ -89,7 +93,8 @@ def main():
             packet_status(screen, (110, 62), packets)
         client.step()
         pygame.display.flip()
-        clock.tick(4)
+        if limit:
+            clock.tick(4)
 
 
 if __name__ == '__main__':
