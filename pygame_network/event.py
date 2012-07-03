@@ -2,7 +2,7 @@ from weakref import proxy
 import pygame
 from pygame.event import Event
 from pygame.locals import USEREVENT
-import client
+import connection
 
 NETWORK = USEREVENT + 1
 NET_CONNECTED = 0
@@ -17,7 +17,7 @@ def _connected_event(connection):
         #'connection': proxy(connection)
         'connection': connection
     }))
-client._connected_event = _connected_event
+connection._connected_event = _connected_event
 
 
 def _disconnected_event(connection):
@@ -26,7 +26,7 @@ def _disconnected_event(connection):
         #'connection': proxy(connection)
         'connection': connection
     }))
-client._disconnected_event = _disconnected_event
+connection._disconnected_event = _disconnected_event
 
 
 def _received_event(connection, channel, packet, packet_id):
@@ -39,7 +39,7 @@ def _received_event(connection, channel, packet, packet_id):
         'p_id': packet_id,
         'p_type': packet.__class__
     }))
-client._received_event = _received_event
+connection._received_event = _received_event
 
 
 def _response_event(connection, channel, packet, packet_id):
@@ -52,4 +52,4 @@ def _response_event(connection, channel, packet, packet_id):
         'p_id': packet_id,
         'p_type': packet.__class__
     }))
-client._response_event = _response_event
+connection._response_event = _response_event

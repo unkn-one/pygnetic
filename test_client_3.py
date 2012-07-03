@@ -58,13 +58,14 @@ def main():
     run = True
     limit = True
     packets = {}
+
     while run:
         events = pygame.event.get()
         for e in events:
             if e.type == KEYDOWN:
                 if e.key == K_SPACE:
                     if connection is not None:
-                        if connection.state == pygame_network.client.STATE_CONNECTED:
+                        if connection.state == pygame_network.connection.STATE_CONNECTED:
                             connection.disconnect_later()
                             connection_status(screen, (140, 38), False)
                     else:
@@ -87,7 +88,7 @@ def main():
                         packet_status(screen, (110, 62), packets)
             if e.type == QUIT or e.type == KEYDOWN and e.key == K_ESCAPE:
                 run = False
-        if len(packets) < 10 and connection is not None and connection.state == pygame_network.client.STATE_CONNECTED:
+        if len(packets) < 10 and connection is not None and connection.state == pygame_network.connection.STATE_CONNECTED:
             msg = ''.join(random.sample('abcdefghijklmnopqrstuvwxyz', 10))
             p_id = connection.net_echo(msg)
             packets[p_id] = [msg, None]

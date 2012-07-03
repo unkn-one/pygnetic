@@ -37,6 +37,7 @@ class PacketManager(object):
     _packet_params = WeakKeyDictionary()  # mapping packet -> type_id, send par
     _type_id_cnt = 0
     _frozen = False
+    _hash = None
 
     def __init__(self):
         # override class variables with instance variables
@@ -46,6 +47,7 @@ class PacketManager(object):
         self._packet_params = cls._packet_params.copy()
         self._type_id_cnt = cls._type_id_cnt
         self._frozen = False
+        self._hash = None
 
     @classmethod
     def register(cls, name, field_names, channel=0, flags=enet.PACKET_FLAG_RELIABLE):
@@ -138,21 +140,20 @@ class PacketManager(object):
     @classmethod
     def get_hash(cls):
         if cls._frozen:
-            ids = cls._packet_types.keys()
-            ids.sort()
-            l = list()
-            for i in ids:
-                p = cls._packet_types[i]
-                l.append((i, p.__name__, p._fields))
-            return hash(tuple(l)) & 0xffffffff
-            # should be the same on 32 & 64 platforms
+            if cls._hash is None:
+                ids = cls._packet_types.keys()
+                ids.sort()
+                l = list()
+                for i in ids:
+                    p = cls._packet_types[i]
+                    l.append((i, p.__name__, p._fields))
+                # should be the same on 32 & 64 platforms
+                cls._hash = hash(tuple(l)) & 0xffffffff
+            return cls._hash
         else:
             _logger.warning('Attempt to get hash of not frozen PacketManager')
 
 
-connect_request = PacketManager.register('connect_request', (
-    'packets_hash',
-))
 update_remoteobject = PacketManager.register('update_remoteobject', (
     'type_id',
     'obj_id',

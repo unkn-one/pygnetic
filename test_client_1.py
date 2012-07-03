@@ -20,6 +20,6 @@ while connection.state != enet.PEER_STATE_DISCONNECTED:
     client.step()
     if counter < MSG_NUMBER and connection.state == enet.PEER_STATE_CONNECTED:
         msg = ''.join(random.sample('abcdefghijklmnopqrstuvwxyz', 10))
-        print("%s: out: %r" % (connection.peer.address, msg))
+        print("%s: out: %r" % (connection.address, msg))
         connection.net_echo(msg)
         counter += 1

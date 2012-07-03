@@ -5,10 +5,9 @@ import pygame_network
 logging.basicConfig(level=logging.DEBUG)
 
 
-class EchoReceiver(pygame_network.client.Receiver):
+class EchoReceiver(pygame_network.connection.Receiver):
     def __init__(self, connection):
-        super(EchoReceiver, self).__init__()
-        self.connection = connection
+        super(EchoReceiver, self).__init__(connection)
         self.connected = None
         self.counter = 10
 
@@ -24,7 +23,7 @@ class EchoReceiver(pygame_network.client.Receiver):
     def step(self):
         if self.counter > 0 and self.connected == True:
             msg = ''.join(random.sample('abcdefghijklmnopqrstuvwxyz', 10))
-            print("%s: out: %r" % (self.connection.peer.address, msg))
+            print("%s: out: %r" % (self.connection.address, msg))
             self.connection.net_echo(msg)
             self.counter -= 1
 
