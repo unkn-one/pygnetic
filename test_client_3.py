@@ -73,6 +73,8 @@ def main():
                         connection_status(screen, (140, 38), False)
                 if e.key == K_l:
                     limit = not limit
+
+            # Handling network packets
             if e.type == NETWORK and e.connection == connection:
                 if e.net_type == NET_CONNECTED:
                     connection_status(screen, (140, 38), True)
@@ -90,7 +92,10 @@ def main():
                 run = False
         if len(packets) < 10 and connection is not None and connection.state == pygame_network.connection.STATE_CONNECTED:
             msg = ''.join(random.sample('abcdefghijklmnopqrstuvwxyz', 10))
+
+            # Sending packets
             p_id = connection.net_echo(msg)
+
             packets[p_id] = [msg, None]
             packet_status(screen, (110, 62), packets)
         client.step()
