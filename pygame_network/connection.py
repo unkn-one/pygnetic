@@ -10,10 +10,13 @@ __all__ = ('Connection',
            'STATE_DISCONNECT_LATER',
            'STATE_ZOMBIE')
 
+import logging
 from weakref import proxy
 from functools import partial
 import enet
 from packet import PacketManager
+
+_logger = logging.getLogger(__name__)
 
 # dummy events
 def _connected_event(connection): pass
@@ -100,8 +103,10 @@ class Connection(object):
 
     def _receive(self, data, channel):
         packet_id, packet = self._packet_manager.unpack(data)
+        name = packet.__class__.__name__
+        _logger.info('Received %s packet', name)
+        name = 'net_' + name
         _received_event(self, channel, packet, packet_id)
-        name = 'net_' + packet.__class__.__name__
         for r in self._receivers:
             getattr(r, name, r.on_recive)(channel, packet_id, packet)
 

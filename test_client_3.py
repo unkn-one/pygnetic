@@ -50,6 +50,7 @@ def main():
     pygame.display.flip()
 
     # Network init
+    pygame_network.event.init()
     echo = pygame_network.packet.PacketManager.register('echo', ('msg',))
     client = pygame_network.client.Client()
     connection = None
