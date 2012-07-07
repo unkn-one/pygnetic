@@ -9,9 +9,7 @@
 
    Class allowing to register new packet types and send them.
    
-   It is used by :class:`client.Host` and :class:`syncobject.SyncObjectManager`.
-   Only method useful to user is :meth:'register' 
-   allowing to register new packets.
+   It is used by :class:`Client` and :class:`Server`.
    
    Example::
    
@@ -24,7 +22,7 @@
       Returns packet class with given name
    
       :param name: name of packet
-      :rtype: (named tuple) packet
+      :return: packet (namedtuple)
       
    
    .. classmethod:: PacketManager.register(name, field_names[, flags])
@@ -36,21 +34,7 @@
       :param flags: 
          enet flags used when sending packet
          (default :const:`enet.PACKET_FLAG_RELIABLE`)
-      :rtype: (named tuple) packet
-      
-   
-   .. classmethod:: PacketManager.send(peer, channel, packet[, *args, **kwargs])
-   
-      Send packet to remote host
-      
-      :param peer: connection to send packet over
-      :param channel: channel of connection
-      :param packet: 
-         object of class created by :meth:`register` or 
-         name of packet (args and kwargs are used to initialize packet object)
-      :rtype: 
-         (int) packet id which can be used to retrieve response from 
-         Pygame event queue
+      :return: packet (namedtuple)
       
 
 Predefined packets

@@ -1,8 +1,9 @@
 import logging
 from weakref import proxy
 import enet
+from receiver import Receiver
 from packet import PacketManager
-from connection import Connection, Receiver
+from connection import Connection
 
 _logger = logging.getLogger(__name__)
 
@@ -11,9 +12,11 @@ class Server(object):
     packet_manager = PacketManager
     receiver_cls = None
 
-    def __init__(self, address, port, connections_limit=4, channel_limit=0, in_bandwidth=0, out_bandwidth=0):
+    def __init__(self, address='', port=0, connections_limit=4, # max 4095
+                 channel_limit=0, in_bandwidth=0, out_bandwidth=0):
         address = enet.Address(address, port)
-        self.host = enet.Host(address, connections_limit, channel_limit, in_bandwidth, out_bandwidth)
+        self.host = enet.Host(address, connections_limit, channel_limit,
+                              in_bandwidth, out_bandwidth)
         self.peers = {}
         self._peer_cnt = 0
         self.packet_manager._frozen = True

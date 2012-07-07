@@ -1,4 +1,7 @@
 import packet
-import client
-import server
 import syncobject
+from client import Client
+from server import Server
+from receiver import Receiver
+
+register = packet.PacketManager.register

@@ -1,4 +1,16 @@
-from weakref import WeakKeyDictionary, proxy
+__all__ = ('Connection',
+           'STATE_ACKNOWLEDGING_CONNECT',
+           'STATE_ACKNOWLEDGING_DISCONNECT',
+           'STATE_CONNECTED',
+           'STATE_CONNECTING',
+           'STATE_CONNECTION_PENDING',
+           'STATE_CONNECTION_SUCCEEDED',
+           'STATE_DISCONNECTED',
+           'STATE_DISCONNECTING',
+           'STATE_DISCONNECT_LATER',
+           'STATE_ZOMBIE')
+
+from weakref import proxy
 from functools import partial
 import enet
 from packet import PacketManager
@@ -22,17 +34,18 @@ STATE_ZOMBIE = enet.PEER_STATE_ZOMBIE
 
 
 class Connection(object):
-    """Class allowing to send messages and packets
+    """Class allowing to send packets
 
-    peer - connection to send packet over
-    channel - channel of connection
+    It's created by by Client or Server, shouldn't be created manually.
 
-    example:
-        client = Client()
-        # chat_msg packet is defined in packets module
-        client.net_chat_msg('Tom', 'Test message')
-        # alternative
-        client.send(packets.chat_msg('Tom', 'Test message'))
+    Sending is possible in two ways:
+    * using net_<packet_name> methods, where <packet_name>
+      is name of packet registered in PacketManager
+    * using send method with packet as argument
+
+    Attributes:
+        parent - proxy to Client / Server instance
+        peer - Enet peer instance
     """
 
     def __init__(self, parent, peer, packet_manager=PacketManager):
@@ -63,7 +76,7 @@ class Connection(object):
     def send(self, packet, *args, **kwargs):
         """Send packet to remote host
 
-        Client.send(packet, *args, **kwargs): return int
+        Connection.send(packet, *args, **kwargs): return int
 
         packet - class created by PacketManager.register or packet name
 
@@ -103,30 +116,37 @@ class Connection(object):
             r.on_disconnect()
 
     def disconnect(self):
+        """Request a disconnection.
+        """
         self.peer.disconnect()
 
     def disconnect_later(self):
+        """Request a disconnection from a peer, but only after all queued
+        outgoing packets are sent.
+        """
         self.peer.disconnect_later()
 
+    def disconnect_now(self):
+        """Force an immediate disconnection.
+        """
+        self.peer.disconnect_now()
+
     def add_receiver(self, receiver):
+        """Add new Receiver to handle packets.
+
+        Connection.add_receiver(receiver)
+
+        receiver - instance of Receiver subclass
+        """
         self._receivers.append(receiver)
         receiver.connection = proxy(self)
 
     @property
     def state(self):
+        """Connection state."""
         return self.peer.state
 
     @property
     def address(self):
+        """Connection address."""
         return self.peer.address
-
-
-class Receiver(object):
-    def on_connect(self):
-        pass
-
-    def on_disconnect(self):
-        pass
-
-    def on_recive(self, channel, packet_id, packet):
-        pass

@@ -7,6 +7,14 @@ _logger = logging.getLogger(__name__)
 
 
 class Client(object):
+    """Class representing network client
+
+    Example:
+        client = pygame_network.client.Client()
+        connection = client.connect("localhost", 10000)
+        while True:
+            client.step()
+    """
     def __init__(self, connections_limit=1, channel_limit=0, in_bandwidth=0, out_bandwidth=0):
         self.host = enet.Host(None, connections_limit, channel_limit, in_bandwidth, out_bandwidth)
         self._peers = {}

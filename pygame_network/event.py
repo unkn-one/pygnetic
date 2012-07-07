@@ -1,3 +1,9 @@
+__all__ = ('NETWORK',
+           'NET_CONNECTED',
+           'NET_DISCONNECTED',
+           'NET_RECEIVED',
+           'NET_RESPONSE')
+
 from weakref import proxy
 import pygame
 from pygame.event import Event
@@ -11,9 +17,13 @@ NET_RECEIVED = 2
 NET_RESPONSE = 3  # TODO: response !!
 
 
-def conf_newtwork_event(val=1):
+def init(event_val=1):
     global NETWORK
-    NETWORK = USEREVENT + val
+    NETWORK = USEREVENT + event_val
+    connection._connected_event = _connected_event
+    connection._disconnected_event = _disconnected_event
+    connection._received_event = _received_event
+    connection._response_event = _response_event
 
 
 def _connected_event(connection):
@@ -22,7 +32,6 @@ def _connected_event(connection):
         #'connection': proxy(connection)
         'connection': connection
     }))
-connection._connected_event = _connected_event
 
 
 def _disconnected_event(connection):
@@ -31,7 +40,6 @@ def _disconnected_event(connection):
         #'connection': proxy(connection)
         'connection': connection
     }))
-connection._disconnected_event = _disconnected_event
 
 
 def _received_event(connection, channel, packet, packet_id):
@@ -44,7 +52,6 @@ def _received_event(connection, channel, packet, packet_id):
         'p_id': packet_id,
         'p_type': packet.__class__
     }))
-connection._received_event = _received_event
 
 
 def _response_event(connection, channel, packet, packet_id):
@@ -57,4 +64,3 @@ def _response_event(connection, channel, packet, packet_id):
         'p_id': packet_id,
         'p_type': packet.__class__
     }))
-connection._response_event = _response_event
