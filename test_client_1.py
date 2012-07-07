@@ -7,7 +7,6 @@ def main():
     logging.basicConfig(level=logging.DEBUG)
 
     pygame_network.packet.PacketManager.register('echo', ('msg',))
-    pygame_network.packet.PacketManager.register('test')
     print 'connecting'
     client = pygame_network.client.Client()
     connection = client.connect("localhost", 54301)
