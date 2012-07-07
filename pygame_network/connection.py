@@ -40,7 +40,7 @@ class Connection(object):
         self.peer = peer
         self._packet_cnt = 0
         self._packet_manager = packet_manager
-        self._receiver = None
+        self._receivers = []
 
     def __del__(self):
         self.peer.disconnect_now()
@@ -88,25 +88,29 @@ class Connection(object):
     def _receive(self, data, channel):
         packet_id, packet = self._packet_manager.unpack(data)
         _received_event(self, channel, packet, packet_id)
-        if self._receiver is not None:
-            name = 'net_' + packet.__class__.__name__
-            getattr(self._receiver, name, self._receiver.on_recive)(channel, packet_id, packet)
+        name = 'net_' + packet.__class__.__name__
+        for r in self._receivers:
+            getattr(r, name, r.on_recive)(channel, packet_id, packet)
 
     def _connect(self):
         _connected_event(self)
-        if self._receiver is not None:
-            self._receiver.on_connect()
+        for r in self._receivers:
+            r.on_connect()
 
     def _disconnect(self):
         _disconnected_event(self)
-        if self._receiver is not None:
-            self._receiver.on_disconnect()
+        for r in self._receivers:
+            r.on_disconnect()
 
     def disconnect(self):
         self.peer.disconnect()
 
     def disconnect_later(self):
         self.peer.disconnect_later()
+
+    def add_receiver(self, receiver):
+        self._receivers.append(receiver)
+        receiver.connection = proxy(self)
 
     @property
     def state(self):
@@ -118,11 +122,6 @@ class Connection(object):
 
 
 class Receiver(object):
-    def __init__(self, connection, *args, **kwargs):
-        super(Receiver, self).__init__(*args, **kwargs)
-        connection._receiver = proxy(self)
-        self.connection = connection
-
     def on_connect(self):
         pass
 

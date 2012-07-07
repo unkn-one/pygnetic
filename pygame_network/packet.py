@@ -50,7 +50,7 @@ class PacketManager(object):
         self._hash = None
 
     @classmethod
-    def register(cls, name, field_names, channel=0, flags=enet.PACKET_FLAG_RELIABLE):
+    def register(cls, name, field_names=tuple(), channel=0, flags=enet.PACKET_FLAG_RELIABLE):
         """Register new packet type
 
         PacketManager.register(name, field_names, channel, flags): return class

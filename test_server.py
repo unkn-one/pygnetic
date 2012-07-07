@@ -1,33 +1,28 @@
-import enet
+import logging
 import pygame_network
+from pygame_network.server import Server
+from pygame_network.connection import Receiver
 
-PM = pygame_network.packet.PacketManager
-PM.register('echo', ('msg',))
-PM._frozen = True
 
-host = enet.Host(enet.Address(b"localhost", 54301), 10, 0, 0, 0)
-
-run = True
-connections = {}
-while run:
-    # Wait 1 second for an event
-    event = host.service(1000)
-    if event.type == enet.EVENT_TYPE_CONNECT:
-        correct = event.data == PM.get_hash()
-        print("%s: CONNECT, PacketManager hash %scorrect" % (
-            event.peer.address, '' if correct else 'in'))
-        if correct:
-            connections[event.peer.incomingSessionID] = 0
-        else:
-            event.peer.disconnect()
-    elif event.type == enet.EVENT_TYPE_DISCONNECT:
-        print("%s: DISCONNECT" % event.peer.address)
-    elif event.type == enet.EVENT_TYPE_RECEIVE:
-        pid, packet = PM.unpack(event.packet.data)
+class EchoReceiver(pygame_network.connection.Receiver):
+    def net_echo(self, channel, packet_id, packet):
         msg = packet.msg.upper()
-        print("%s: IN:  %r" % (event.peer.address, packet.msg))
-        if event.peer.send(0, enet.Packet(PM.pack(pid, packet.__class__(msg)))) < 0:
-            print("%s: Error sending echo packet!" % event.peer.address)
-        else:
-            print("%s: OUT: %r" % (event.peer.address, msg))
-        connections[event.peer.incomingSessionID] += 1
+        self.connection.net_echo(msg)
+        print 'packet #%d @ch%d: %s' % (packet_id, channel, packet)
+
+
+def main():
+    logging.basicConfig(level=logging.DEBUG)
+
+    pygame_network.packet.PacketManager.register('echo', ('msg',))
+    print 'starting server'
+    server = Server("localhost", 54301)
+    server.receiver_cls = EchoReceiver
+    print 'server started'
+    run = True
+    while run:
+        server.step(1000)
+
+
+if __name__ == '__main__':
+    main()

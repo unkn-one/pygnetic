@@ -5,8 +5,6 @@ from pygame.locals import *
 import pygame_network
 from pygame_network.event import *
 
-logging.basicConfig(level=logging.DEBUG)
-
 
 def packet_status(screen, position, packets):
     i = 0
@@ -36,6 +34,8 @@ def connection_status(screen, position, status=None):
 
 
 def main():
+    logging.basicConfig(level=logging.DEBUG)
+
     # Pygame init
     pygame.init()
     screen = pygame.display.set_mode((800, 600))

@@ -11,6 +11,11 @@ NET_RECEIVED = 2
 NET_RESPONSE = 3  # TODO: response !!
 
 
+def conf_newtwork_event(val=1):
+    global NETWORK
+    NETWORK = USEREVENT + val
+
+
 def _connected_event(connection):
     pygame.event.post(Event(NETWORK, {
         'net_type': NET_CONNECTED,

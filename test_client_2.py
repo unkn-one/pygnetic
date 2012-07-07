@@ -2,12 +2,9 @@ import random
 import logging
 import pygame_network
 
-logging.basicConfig(level=logging.DEBUG)
-
 
 class EchoReceiver(pygame_network.connection.Receiver):
-    def __init__(self, connection):
-        super(EchoReceiver, self).__init__(connection)
+    def __init__(self):
         self.connected = None
         self.counter = 10
 
@@ -29,11 +26,14 @@ class EchoReceiver(pygame_network.connection.Receiver):
 
 
 def main():
+    logging.basicConfig(level=logging.DEBUG)
+
     pygame_network.packet.PacketManager.register('echo', ('msg',))
     print 'connecting'
     client = pygame_network.client.Client()
     connection = client.connect("localhost", 54301)
-    receiver = EchoReceiver(connection)
+    receiver = EchoReceiver()
+    connection.add_receiver(receiver)
     print 'client started'
     while receiver.connected != False:
         client.step()
