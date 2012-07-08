@@ -52,11 +52,11 @@ class Server(object):
                 self.peers[event.peer.data]._receive(event.packet.data, event.channelID)
             event = host.check_events()
 
-    def connections(self, exclude=None):
+    def connections(self, exclude=[]):
         if exclude is None:
             return self.peers.itervalues()
         else:
             return (c for c in self.peers.itervalues() if c not in exclude)
 
-    def receivers(self, exclude=None):
+    def receivers(self, exclude=[]):
         return (c._receivers[0] for c in self.peers.itervalues() if c not in exclude)
