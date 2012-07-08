@@ -1,5 +1,6 @@
 import logging
 from weakref import proxy
+from functools import partial
 import enet
 from receiver import Receiver
 from packet import PacketManager
@@ -50,3 +51,12 @@ class Server(object):
                 _logger.info('Received data from %s', event.peer.address)
                 self.peers[event.peer.data]._receive(event.packet.data, event.channelID)
             event = host.check_events()
+
+    def connections(self, exclude=None):
+        if exclude is None:
+            return self.peers.itervalues()
+        else:
+            return (c for c in self.peers.itervalues() if c not in exclude)
+
+    def receivers(self, exclude=None):
+        return (c._receivers[0] for c in self.peers.itervalues() if c not in exclude)

@@ -3,15 +3,15 @@ from collections import namedtuple
 from weakref import WeakKeyDictionary, WeakValueDictionary
 import enet
 try:
-    import msgpack
-    _packer = msgpack.Packer()
-    _unpacker = msgpack.Unpacker()
+    import msgpack as s_lib
+    _packer = s_lib.Packer()
+    _unpacker = s_lib.Unpacker()
     _pack = _packer.pack
     _unpack = lambda data: _unpacker.feed(data) or _unpacker.unpack()
 except ImportError:
-    import json
-    _packer = json.JSONEncoder()
-    _unpacker = json.JSONDecoder()
+    import json as s_lib
+    _packer = s_lib.JSONEncoder()
+    _unpacker = s_lib.JSONDecoder()
     _pack = _packer.encode
     _unpack = _unpacker.decode
 
@@ -144,6 +144,7 @@ class PacketManager(object):
                 ids = cls._packet_types.keys()
                 ids.sort()
                 l = list()
+                l.append(s_lib.__name__)
                 for i in ids:
                     p = cls._packet_types[i]
                     l.append((i, p.__name__, p._fields))
