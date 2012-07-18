@@ -42,25 +42,25 @@ def _disconnected_event(connection):
     }))
 
 
-def _received_event(connection, channel, packet, packet_id):
+def _received_event(connection, channel, message, message_id):
     pygame.event.post(Event(NETWORK, {
         'net_type': NET_RECEIVED,
         #'connection': proxy(connection),
         'connection': connection,
         'channel': channel,
-        'packet': packet,
-        'p_id': packet_id,
-        'p_type': packet.__class__
+        'message': message,
+        'msg_id': message_id,
+        'msg_type': message.__class__
     }))
 
 
-def _response_event(connection, channel, packet, packet_id):
+def _response_event(connection, channel, message, message_id):
     pygame.event.post(Event(NETWORK, {
         'net_type': NET_RESPONSE,
         #'connection': proxy(connection),
         'connection': connection,
         'channel': channel,
-        'packet': packet,
-        'p_id': packet_id,
-        'p_type': packet.__class__
+        'message': message,
+        'msg_id': message_id,
+        'msg_type': message.__class__
     }))

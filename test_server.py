@@ -1,13 +1,13 @@
 import logging
 import pygame_network
-from pygame_network import Receiver, Server
+from pygame_network import Handler, Server
 
 
-class EchoReceiver(Receiver):
-    def net_echo(self, channel, packet_id, packet):
-        msg = packet.msg.upper()
+class EchoHandler(Handler):
+    def net_echo(self, channel, message_id, message):
+        msg = message.msg.upper()
         self.connection.net_echo(msg)
-        print 'packet #%d @ch%d: %s' % (packet_id, channel, packet)
+        print 'message #%d @ch%d: %s' % (message_id, channel, message)
 
 
 def main():
@@ -16,7 +16,7 @@ def main():
     pygame_network.register('echo', ('msg',))
     print 'starting server'
     server = Server(port=54301)
-    server.receiver_cls = EchoReceiver
+    server.handler_cls = EchoHandler
     print 'server started'
     run = True
     while run:

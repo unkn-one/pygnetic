@@ -1,12 +1,12 @@
-import packet
+import message
 import connection
 import syncobject
 from client import Client
 from server import Server
-from receiver import Receiver
+from handler import Handler
 try:
     import event
 except ImportError:
     pass
 
-register = packet.PacketManager.register
+register = message.MessageFactory.register

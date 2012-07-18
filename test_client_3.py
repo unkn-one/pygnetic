@@ -6,7 +6,7 @@ import pygame_network
 from pygame_network.event import *
 
 
-def packet_status(screen, position, packets):
+def message_status(screen, position, packets):
     i = 0
     keys = packets.keys()
     keys.sort()
@@ -50,15 +50,15 @@ def main():
     pygame.display.flip()
 
     # Network init
-    pygame_network.event.init()
-    echo = pygame_network.packet.PacketManager.register('echo', ('msg',))
-    client = pygame_network.client.Client()
+    pygame_network.event.init()  # enable Pygame events
+    echo = pygame_network.register('echo', ('msg',))
+    client = pygame_network.Client()
     connection = None
 
     # Variables
     run = True
     limit = True
-    packets = {}
+    messages = {}
 
     while run:
         events = pygame.event.get()
@@ -75,30 +75,30 @@ def main():
                 if e.key == K_l:
                     limit = not limit
 
-            # Handling network packets
+            # Handling network messages
             if e.type == NETWORK and e.connection == connection:
                 if e.net_type == NET_CONNECTED:
                     connection_status(screen, (140, 38), True)
                 elif e.net_type == NET_DISCONNECTED:
                     connection_status(screen, (140, 38), None)
                     connection = None
-                    packets = {}
-                    packet_status(screen, (110, 62), packets)
+                    messages = {}
+                    message_status(screen, (110, 62), messages)
                 elif e.net_type == NET_RECEIVED:
-                    if e.p_type == echo:
-                        msg = e.packet.msg
-                        packets[e.p_id][1] = msg
-                        packet_status(screen, (110, 62), packets)
+                    if e.msg_type == echo:
+                        msg = e.message.msg
+                        messages[e.msg_id][1] = msg
+                        message_status(screen, (110, 62), messages)
             if e.type == QUIT or e.type == KEYDOWN and e.key == K_ESCAPE:
                 run = False
-        if len(packets) < 10 and connection is not None and connection.state == pygame_network.connection.STATE_CONNECTED:
+        if len(messages) < 10 and connection is not None and connection.state == pygame_network.connection.STATE_CONNECTED:
             msg = ''.join(random.sample('abcdefghijklmnopqrstuvwxyz', 10))
 
-            # Sending packets
-            p_id = connection.net_echo(msg)
+            # Sending messages
+            m_id = connection.net_echo(msg)
 
-            packets[p_id] = [msg, None]
-            packet_status(screen, (110, 62), packets)
+            messages[m_id] = [msg, None]
+            message_status(screen, (110, 62), messages)
         client.step()
         pygame.display.flip()
         if limit:

@@ -1,6 +1,6 @@
 import logging
 import enet
-from packet import PacketManager
+from message import MessageFactory
 from connection import Connection
 
 _logger = logging.getLogger(__name__)
@@ -20,15 +20,15 @@ class Client(object):
         self._peers = {}
         self._peer_cnt = 0
 
-    def connect(self, address, port, channels=2, packet_manager=PacketManager):
+    def connect(self, address, port, channels=2, message_factory=MessageFactory):
         peer_id = self._peer_cnt = self._peer_cnt + 1
         peer_id = str(peer_id)
-        # Can't register packets after connection
-        packet_manager._frozen = True
+        # Can't register messages after connection
+        message_factory._frozen = True
         address = enet.Address(address, port)
-        peer = self.host.connect(address, channels, packet_manager.get_hash())
+        peer = self.host.connect(address, channels, message_factory.get_hash())
         peer.data = peer_id
-        connection = Connection(self, peer, packet_manager)
+        connection = Connection(self, peer, message_factory)
         self._peers[peer_id] = connection
         return connection
 

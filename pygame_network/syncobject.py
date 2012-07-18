@@ -1,5 +1,5 @@
 from weakref import WeakKeyDictionary
-from packet import *
+from message import *
 
 SYNCOBJECT_MODE_AUTO = 0
 SYNCOBJECT_MODE_MANUAL = 1
@@ -13,7 +13,7 @@ class SyncObject(object):
     to specify a tuple of variable names for synchronization.
     Each assignment to a variable defined in sync_var will notify
     SyncObjectManager which, depending on sync_mode, will either
-    prepare update packet (SYNCOBJECT_MODE_AUTO) or
+    prepare update message (SYNCOBJECT_MODE_AUTO) or
     wait with preparation for send_changes call (SYNCOBJECT_MODE_MANUAL).
     sync_flags overrides default enet sending flags.
     """
@@ -35,16 +35,16 @@ class SyncObject(object):
         """
         pass
 
-    def on_reply(self, packet_id):
+    def on_reply(self, message_id):
         """Callback when there was reply to change from remote host
         """
         pass
 
     def send_changes(self):
-        """Prepare update packet to send
+        """Prepare update message to send
 
         When sync_mode is SYNCOBJECT_MODE_MANUAL,
-        notify SyncObjectManager to prepare update packet
+        notify SyncObjectManager to prepare update message
         """
         pass
 
@@ -81,13 +81,13 @@ class SyncObjectManager(object):
 
     @classmethod
     def changed(cls, obj, var_name):
-        """Prepares update packet
+        """Prepares update message
         """
         print '%s@%s updated' % (var_name, obj)
         # TODO: finish this
-        # TODO: push update packet to queue if in auto mode
+        # TODO: push update message to queue if in auto mode
 
-# TODO: pushing update packets from SyncObject
+# TODO: pushing update messages from SyncObject
 # TODO: mapping obj type and variables to ints
 
 
