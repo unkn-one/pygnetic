@@ -1,16 +1,15 @@
 import random
 import logging
-import pygame_network
-from pygame_network import Handler, Client
+import pygame_network as net
 
 
-class EchoHandler(Handler):
+class EchoHandler(net.Handler):
     def __init__(self):
         self.connected = None
         self.counter = 10
 
     def net_echo(self, channel, message_id, message):
-        print 'message #%d @ch%d: %s' % (message_id, channel, message)
+        logging.info('Received message #%d @ch%d: %s', message_id, channel, message)
 
     def on_connect(self):
         self.connected = True
@@ -21,21 +20,18 @@ class EchoHandler(Handler):
     def step(self):
         if self.counter > 0 and self.connected == True:
             msg = ''.join(random.sample('abcdefghijklmnopqrstuvwxyz', 10))
-            print("%s: out: %r" % (self.connection.address, msg))
+            logging.info('Sending: %s', msg)
             self.connection.net_echo(msg)
             self.counter -= 1
 
 
 def main():
-    logging.basicConfig(level=logging.DEBUG)
-
-    pygame_network.register('echo', ('msg',))
-    print 'connecting'
-    client = Client()
+    net.init(logging_lvl=logging.DEBUG)
+    net.register('echo', ('msg',))
+    client = net.Client()
     connection = client.connect("localhost", 54301)
     handler = EchoHandler()
     connection.add_handler(handler)
-    print 'client started'
     while handler.connected != False:
         client.step()
         handler.step()

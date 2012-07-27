@@ -1,39 +1,25 @@
-__all__ = ('Connection',
-           'STATE_ACKNOWLEDGING_CONNECT',
-           'STATE_ACKNOWLEDGING_DISCONNECT',
-           'STATE_CONNECTED',
-           'STATE_CONNECTING',
-           'STATE_CONNECTION_PENDING',
-           'STATE_CONNECTION_SUCCEEDED',
-           'STATE_DISCONNECTED',
-           'STATE_DISCONNECTING',
-           'STATE_DISCONNECT_LATER',
-           'STATE_ZOMBIE')
-
 import logging
 from weakref import proxy
 from functools import partial
 import enet
-from message import MessageFactory
+from ...message import MessageFactory
+from ... import event
 
+__all__ = ('Connection', 'State')
 _logger = logging.getLogger(__name__)
 
-# dummy events
-def _connected_event(connection): pass
-def _disconnected_event(connection): pass
-def _received_event(connection, channel, message, message_id): pass
-def _response_event(connection, channel, message, message_id): pass
 
-STATE_ACKNOWLEDGING_CONNECT = enet.PEER_STATE_ACKNOWLEDGING_CONNECT
-STATE_ACKNOWLEDGING_DISCONNECT = enet.PEER_STATE_ACKNOWLEDGING_DISCONNECT
-STATE_CONNECTED = enet.PEER_STATE_CONNECTED
-STATE_CONNECTING = enet.PEER_STATE_CONNECTING
-STATE_CONNECTION_PENDING = enet.PEER_STATE_CONNECTION_PENDING
-STATE_CONNECTION_SUCCEEDED = enet.PEER_STATE_CONNECTION_SUCCEEDED
-STATE_DISCONNECTED = enet.PEER_STATE_DISCONNECTED
-STATE_DISCONNECTING = enet.PEER_STATE_DISCONNECTING
-STATE_DISCONNECT_LATER = enet.PEER_STATE_DISCONNECT_LATER
-STATE_ZOMBIE = enet.PEER_STATE_ZOMBIE
+class State(object):
+    ACKNOWLEDGING_CONNECT = enet.PEER_STATE_ACKNOWLEDGING_CONNECT
+    ACKNOWLEDGING_DISCONNECT = enet.PEER_STATE_ACKNOWLEDGING_DISCONNECT
+    CONNECTED = enet.PEER_STATE_CONNECTED
+    CONNECTING = enet.PEER_STATE_CONNECTING
+    CONNECTION_PENDING = enet.PEER_STATE_CONNECTION_PENDING
+    CONNECTION_SUCCEEDED = enet.PEER_STATE_CONNECTION_SUCCEEDED
+    DISCONNECTED = enet.PEER_STATE_DISCONNECTED
+    DISCONNECTING = enet.PEER_STATE_DISCONNECTING
+    DISCONNECT_LATER = enet.PEER_STATE_DISCONNECT_LATER
+    ZOMBIE = enet.PEER_STATE_ZOMBIE
 
 
 class Connection(object):
@@ -96,27 +82,29 @@ class Connection(object):
         flags = kwargs.get('flags', flags)
         channel = kwargs.get('channel', channel)
         message_id = self._message_cnt = self._message_cnt + 1
+        name = message.__name__
         message = message(*args, **kwargs)
         data = self._message_factory.pack(message_id, message)
         if self.peer.send(channel, enet.Packet(data, flags)) == 0:
+            _logger.info('Sent %s message on channel %d', name, channel)
             return message_id
 
     def _receive(self, data, channel):
         message_id, message = self._message_factory.unpack(data)
         name = message.__class__.__name__
-        _logger.info('Received %s message', name)
+        _logger.info('Received %s message on channel %d', name, channel)
         name = 'net_' + name
-        _received_event(self, channel, message, message_id)
+        event.received(self, channel, message, message_id)
         for r in self._handlers:
             getattr(r, name, r.on_recive)(channel, message_id, message)
 
     def _connect(self):
-        _connected_event(self)
+        event.connected(self)
         for r in self._handlers:
             r.on_connect()
 
     def _disconnect(self):
-        _disconnected_event(self)
+        event.disconnected(self)
         for r in self._handlers:
             r.on_disconnect()
 

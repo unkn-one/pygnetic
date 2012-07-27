@@ -2,8 +2,7 @@ import random
 import logging
 import pygame
 from pygame.locals import *
-import pygame_network
-from pygame_network.event import *
+import pygame_network as net
 
 
 def message_status(screen, position, packets):
@@ -34,8 +33,6 @@ def connection_status(screen, position, status=None):
 
 
 def main():
-    logging.basicConfig(level=logging.DEBUG)
-
     # Pygame init
     pygame.init()
     screen = pygame.display.set_mode((800, 600))
@@ -50,9 +47,9 @@ def main():
     pygame.display.flip()
 
     # Network init
-    pygame_network.event.init()  # enable Pygame events
-    echo = pygame_network.register('echo', ('msg',))
-    client = pygame_network.Client()
+    net.init(events=True, logging_lvl=logging.DEBUG)  # enable Pygame events
+    echo = net.register('echo', ('msg',))
+    client = net.Client()
     connection = None
 
     # Variables
@@ -66,7 +63,7 @@ def main():
             if e.type == KEYDOWN:
                 if e.key == K_SPACE:
                     if connection is not None:
-                        if connection.state == pygame_network.connection.STATE_CONNECTED:
+                        if connection.state == net.State.CONNECTED:
                             connection.disconnect_later()
                             connection_status(screen, (140, 38), False)
                     else:
@@ -76,22 +73,22 @@ def main():
                     limit = not limit
 
             # Handling network messages
-            if e.type == NETWORK and e.connection == connection:
-                if e.net_type == NET_CONNECTED:
+            if e.type == net.event.NETWORK and e.connection == connection:
+                if e.net_type == net.event.NET_CONNECTED:
                     connection_status(screen, (140, 38), True)
-                elif e.net_type == NET_DISCONNECTED:
+                elif e.net_type == net.event.NET_DISCONNECTED:
                     connection_status(screen, (140, 38), None)
                     connection = None
                     messages = {}
                     message_status(screen, (110, 62), messages)
-                elif e.net_type == NET_RECEIVED:
+                elif e.net_type == net.event.NET_RECEIVED:
                     if e.msg_type == echo:
                         msg = e.message.msg
                         messages[e.msg_id][1] = msg
                         message_status(screen, (110, 62), messages)
             if e.type == QUIT or e.type == KEYDOWN and e.key == K_ESCAPE:
                 run = False
-        if len(messages) < 10 and connection is not None and connection.state == pygame_network.connection.STATE_CONNECTED:
+        if len(messages) < 10 and connection is not None and connection.state == net.State.CONNECTED:
             msg = ''.join(random.sample('abcdefghijklmnopqrstuvwxyz', 10))
 
             # Sending messages

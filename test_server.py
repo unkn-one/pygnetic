@@ -1,23 +1,20 @@
 import logging
-import pygame_network
-from pygame_network import Handler, Server
+import pygame_network as net
 
 
-class EchoHandler(Handler):
+class EchoHandler(net.Handler):
     def net_echo(self, channel, message_id, message):
         msg = message.msg.upper()
         self.connection.net_echo(msg)
-        print 'message #%d @ch%d: %s' % (message_id, channel, message)
+        logging.info('message #%d @ch%d: %s', message_id, channel, message)
 
 
 def main():
-    logging.basicConfig(level=logging.DEBUG)
-
-    pygame_network.register('echo', ('msg',))
-    print 'starting server'
-    server = Server(port=54301)
+    net.init(logging_lvl=logging.DEBUG)
+    net.register('echo', ('msg',))
+    server = net.Server(port=54301)
     server.handler_cls = EchoHandler
-    print 'server started'
+    logging.info('Listening')
     run = True
     while run:
         server.step(1000)

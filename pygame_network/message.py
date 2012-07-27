@@ -2,22 +2,10 @@ import logging
 from collections import namedtuple
 from weakref import WeakKeyDictionary, WeakValueDictionary
 import enet
-try:
-    import msgpack as s_lib
-    _packer = s_lib.Packer()
-    _unpacker = s_lib.Unpacker()
-    _pack = _packer.pack
-    _unpack = lambda data: _unpacker.feed(data) or _unpacker.unpack()
-except ImportError:
-    import json as s_lib
-    _packer = s_lib.JSONEncoder()
-    _unpacker = s_lib.JSONDecoder()
-    _pack = _packer.encode
-    _unpack = _unpacker.decode
-
-_logger = logging.getLogger(__name__)
 
 __all__ = ('MessageFactory', 'MessageError')
+_logger = logging.getLogger(__name__)
+s_lib = None
 
 
 class MessageError(Exception):
@@ -87,7 +75,9 @@ class MessageFactory(object):
         type_id = cls._message_params[message.__class__][0]
         message = (type_id, message_id) + message
         cls._message_cnt = message_id
-        return _pack(message)
+        data = s_lib.pack(message)
+        _logger.debug("Packing message (length: %d)", len(data))
+        return data
 
     @classmethod
     def unpack(cls, data):
@@ -97,7 +87,8 @@ class MessageFactory(object):
 
         data - packed message data as a string
         """
-        message = _unpack(data)
+        _logger.debug("Unpacking message (length: %d)", len(data))
+        message = s_lib.unpack(data)
         try:
             type_id, packet_id = message[:2]
             return packet_id, cls._message_types[type_id](*message[2:])

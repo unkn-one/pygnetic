@@ -1,23 +1,19 @@
 import random
 import logging
-import pygame_network
-from pygame_network.connection import STATE_CONNECTED, STATE_DISCONNECTED
+import pygame_network as net
 
 
 def main():
-    logging.basicConfig(level=logging.DEBUG)
-
-    pygame_network.register('echo', ('msg',))
-    print 'connecting'
-    client = pygame_network.Client()
+    net.init(logging_lvl=logging.DEBUG)
+    net.register('echo', ('msg',))
+    client = net.Client()
     connection = client.connect("localhost", 54301)
     counter = 0
-    print 'client started'
-    while connection.state != STATE_DISCONNECTED:
+    while connection.state != net.State.DISCONNECTED:
         client.step()
-        if counter < 10 and connection.state == STATE_CONNECTED:
+        if counter < 10 and connection.state == net.State.CONNECTED:
             msg = ''.join(random.sample('abcdefghijklmnopqrstuvwxyz', 10))
-            print("%s: out: %r" % (connection.address, msg))
+            logging.info('Sending: %s', msg)
             connection.net_echo(msg)
             counter += 1
 
