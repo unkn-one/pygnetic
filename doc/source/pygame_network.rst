@@ -6,17 +6,44 @@
    
    connection
    event
-   packet
+   message
    syncobject
 
 
 Functions
 ---------
 
+.. function:: init([events, event_val, logging_lvl, network, serialization])
+
+   Initialize network library.
+   
+   :param events: allow sending Pygame events (default False)
+   :param event_val:
+      set :const:`event.NETWORK` as :const:`pygame.USEREVENT` + :attr:`event_val` (default 1)
+   :param logging_lvl:
+      level of logging messages (default :const:`logging.INFO`
+      (see: :ref:`logging-basic-tutorial`), None to skip initializing
+      logging module)
+   :param network:
+      name(s) of network library adapters, first available will be used
+      (default ['enet'])
+   :type network: string or list of strings
+   :param serialization:
+      name(s) of serialization library adapters, first available will be used
+      (default ['msgpack', 'json'])
+   :type serialization: string or list of strings
+   
+   .. note::
+   
+      Because of the dynamic loading of network library adapter, 
+      :class:`Client`, :class:`Server` and :class:`State` classes will only be
+      available after initialization.
+
+
 .. function:: register(name, field_names[, flags])
    
    Register new packet type and return class by calling 
-   :meth:`packet.PacketManager.register` 
+   :meth:`message.MessageFactory.register`
    
    :param name: name of packet class
    :param field_names: list of names of packet fields

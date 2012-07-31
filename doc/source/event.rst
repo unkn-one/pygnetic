@@ -5,35 +5,50 @@
    :synopsis: Module defining Pygame events.
 
 
+.. data:: NETWORK
+
+.. data:: NET_CONNECTED
+
+.. data:: NET_DISCONNECTED
+
+.. data:: NET_RECEIVED
+
+.. note::
+   
+   If you plan to change value of :const:`NETWORK` with :func:`init`, then use:: 
+      
+      import pygame_network.event as event
+      # rather than
+      # from pygame_network.event import NETWORK # wrong
+   
+    
+
+Event attributes
+----------------
+
 Connected event
-   | ``event.type`` = :const:`NETWORK`
-   | ``event.net_type`` = :const:`NET_CONNECTED`
-   | ``event.connection`` -- :func:`proxy <weakref.proxy>` to connection
+   | ``type`` = :const:`event.NETWORK`
+   | ``net_type`` = :const:`event.NET_CONNECTED`
+   | ``connection`` -- connection
 
 Disconnected event
-   | ``event.type`` = :const:`NETWORK`
-   | ``event.net_type`` = :const:`NET_DISCONNECTED`
-   | ``event.connection`` -- :func:`proxy <weakref.proxy>` to connection
+   | ``type`` = :const:`event.NETWORK`
+   | ``net_type`` = :const:`event.NET_DISCONNECTED`
+   | ``connection`` -- connection
 
 Received event
-   | ``event.type`` = :const:`NETWORK`
-   | ``event.net_type`` = :const:`NET_RECEIVED`
-   | ``event.connection`` -- :func:`proxy <weakref.proxy>` to connection
-   | ``event.channel`` -- channel of connection
-   | ``event.packet`` -- received packet
-   | ``event.p_id`` -- packet identifier
-   | ``event.p_type`` -- packet type
+   | ``type`` = :const:`event.NETWORK`
+   | ``net_type`` = :const:`event.NET_RECEIVED`
+   | ``connection`` -- connection
+   | ``channel`` -- channel of connection
+   | ``message`` -- received message
+   | ``msg_id`` -- message identifier
+   | ``msg_type`` -- message type
 
-Response event
-   | ``event.type`` = :const:`NETWORK`
-   | ``event.net_type`` = :const:`NET_RESPONSE`
-   | ``event.connection`` -- :func:`proxy <weakref.proxy>` to connection
-   | ``event.channel`` -- channel of connection
-   | ``event.packet`` -- received packet
-   | ``event.p_id`` -- packet identifier
-   | ``event.p_type`` -- packet type
 
-Example::
+Example
+-------
+::
 
    for e in pygame.event.get():
        if e.type == NETWORK:
@@ -42,9 +57,9 @@ Example::
            elif e.net_type == NET_DISCONNECTED:
                print 'disconnected'
            elif e.net_type == NET_RECEIVED:
-               if e.p_type == packet.chat_msg:
-                   print '%s: %s' % (e.packet.player, e.packet.msg)
+               if e.msg_type == message.chat_msg:
+                   print '%s: %s' % (e.message.player, e.message.msg)
                else:
-                   print 'received:', e.packet
-           elif e.net_type == NET_RESPONSE:
-               print 'response @%d: %s' % (e.p_id, e.packet)
+                   print 'received:', e.message
+                   
+   

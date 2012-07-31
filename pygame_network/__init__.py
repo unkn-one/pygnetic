@@ -9,6 +9,20 @@ register = message.MessageFactory.register
 
 def init(events=False, event_val=1, logging_lvl=logging.INFO,
          network=('enet',), serialization=('msgpack', 'json')):
+    """Initialize network library.
+
+    events - allow sending Pygame events (default False)
+    event_val - set event ID as event_val + pygame.USEREVENT (default 1)
+    logging_lvl - level of logging messages (default logging.INFO, None to skip
+                  initializing logging module
+    network - string or list of strings with names of network library adapters,
+              first available will be used
+    serialization - string or list of strings with names of serialization
+                    library adapters, first available will be used
+
+    Note: Because of the dynamic loading of network library adapter, Client,
+        Server and State classes will only be available after initialization.
+    """
     global Client, Server, State
     _logger = logging.getLogger(__name__)
     if logging_lvl is not None:
@@ -45,7 +59,6 @@ def init(events=False, event_val=1, logging_lvl=logging.INFO,
         return
     message.s_lib = smod
     _logger.info("Using %s serialization module", name)
-    print nmod
     if events:
         _logger.info("Enabling pygame events")
         import event

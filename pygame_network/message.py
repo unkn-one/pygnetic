@@ -16,9 +16,11 @@ class MessageFactory(object):
     """Class allowing to register new message types and pack/unpack them.
 
     example:
-        chat_msg = MessageFactory.register('chat_msg', ('player', 'msg'),
-                                          enet.PACKET_FLAG_RELIABLE)
-        MessageFactory.pack(chat_msg('Tom', 'Test message'))
+        chat_msg = MessageFactory.register('chat_msg', ('player', 'msg'))
+        data = MessageFactory.pack(chat_msg('Tom', 'Test message'))
+        received_msg = MessageFactory.unpack(data)
+        player = received_msg.player
+        msg = received_msg.msg
     """
     _message_names = {}  # mapping name -> message
     _message_types = WeakValueDictionary()  # mapping type_id -> message
@@ -38,13 +40,14 @@ class MessageFactory(object):
         self._hash = None
 
     @classmethod
-    def register(cls, name, field_names=tuple(), channel=0, flags=enet.PACKET_FLAG_RELIABLE):
+    def register(cls, name, field_names=tuple(), **kwargs):
         """Register new message type
 
-        MessageFactory.register(name, field_names, channel, flags): return class
+        MessageFactory.register(name, field_names[, **kwargs]): return class
 
         name - name of message class
         field_names - names of message fields
+        args - additional arguments for sending message
 
         Warning: All packets must be registered in THE SAME ORDER in client and
         server, BEFORE creating any connection.
@@ -58,7 +61,7 @@ class MessageFactory(object):
         packet = namedtuple(name, field_names)
         cls._message_names[name] = packet
         cls._message_types[type_id] = packet
-        cls._message_params[packet] = (type_id, channel, flags)
+        cls._message_params[packet] = (type_id, kwargs)
         return packet
 
     @classmethod
@@ -124,9 +127,9 @@ class MessageFactory(object):
 
     @classmethod
     def get_params(cls, message):
-        """Return tuple containing type_id, channel and sending flags
+        """Return tuple containing type_id, and sending keyword args
 
-        MessageFactory.get_params(message): return (int, int, int)
+        MessageFactory.get_params(message): return (int, dict)
 
         message - message class created by register
         """
@@ -154,7 +157,7 @@ update_remoteobject = MessageFactory.register('update_remoteobject', (
     'type_id',
     'obj_id',
     'variables'
-), 1, 0)
+), channel=1, flags=0)
 chat_msg = MessageFactory.register('chat_msg', (
     'player',
     'msg'

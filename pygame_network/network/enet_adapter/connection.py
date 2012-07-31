@@ -78,9 +78,9 @@ class Connection(object):
         self._send(message, *args, **kwargs)
 
     def _send(self, message, *args, **kwargs):
-        _, channel, flags = self._message_factory.get_params(message)
-        flags = kwargs.get('flags', flags)
-        channel = kwargs.get('channel', channel)
+        params = self._message_factory.get_params(message)[1]
+        flags = kwargs.get('flags', params.get('flags', enet.PACKET_FLAG_RELIABLE))
+        channel = kwargs.get('channel', params.get('channel', 0))
         message_id = self._message_cnt = self._message_cnt + 1
         name = message.__name__
         message = message(*args, **kwargs)
