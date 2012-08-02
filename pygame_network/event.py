@@ -9,6 +9,18 @@ NET_DISCONNECTED = 1
 NET_RECEIVED = 2
 
 
+def connected(connection):
+    pass
+
+
+def disconnected(connection):
+    pass
+
+
+def received(connection, message, channel):
+    pass
+
+
 def init(event_val=1):
     global NETWORK, connected, disconnected, received
     import pygame
@@ -32,26 +44,13 @@ def init(event_val=1):
         }))
     disconnected = _disconnected
 
-    def _received(connection, channel, message, message_id):
+    def _received(connection, message, channel=0):
         pygame.event.post(Event(NETWORK, {
             'net_type': NET_RECEIVED,
             #'connection': proxy(connection),
             'connection': connection,
             'channel': channel,
             'message': message,
-            'msg_id': message_id,
             'msg_type': message.__class__
         }))
     received = _received
-
-
-def connected(connection):
-    pass
-
-
-def disconnected(connection):
-    pass
-
-
-def received(connection, channel, message, message_id):
-    pass

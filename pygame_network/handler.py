@@ -1,6 +1,6 @@
 class Handler(object):
     """Base class for objects handling packets through
-    net_packet_name(channel, message_id, message) functions
+    net_packet_name(message, channel) methods
     """
     def on_connect(self):
         pass
@@ -8,5 +8,5 @@ class Handler(object):
     def on_disconnect(self):
         pass
 
-    def on_recive(self, channel, message_id, message):
+    def on_recive(self, message, channel):
         pass

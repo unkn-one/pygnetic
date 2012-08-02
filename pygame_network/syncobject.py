@@ -1,8 +1,9 @@
 from weakref import WeakKeyDictionary
 from message import *
 
-SYNCOBJECT_MODE_AUTO = 0
-SYNCOBJECT_MODE_MANUAL = 1
+class Mode(object):
+    AUTO = 0
+    MANUAL = 1
 
 
 class SyncObject(object):
@@ -13,12 +14,12 @@ class SyncObject(object):
     to specify a tuple of variable names for synchronization.
     Each assignment to a variable defined in sync_var will notify
     SyncObjectManager which, depending on sync_mode, will either
-    prepare update message (SYNCOBJECT_MODE_AUTO) or
-    wait with preparation for send_changes call (SYNCOBJECT_MODE_MANUAL).
+    prepare update message (Mode.AUTO) or
+    wait with preparation for send_changes call (Mode.MANUAL).
     sync_flags overrides default enet sending flags.
     """
     sync_var = ()
-    sync_mode = SYNCOBJECT_MODE_AUTO
+    sync_mode = Mode.AUTO
     sync_flags = None
 
     def __init__(self, *args, **kwargs):
@@ -76,14 +77,14 @@ class SyncObjectManager(object):
             cls._known_types[obj.__class__] = type_id
             cls._type_id_cnt = type_id
         obj_id = cls._obj_id_cnt + 1
-        cls._sync_objs[obj] = (type_id, obj_id, [False] * len(obj.sync_var))
+        cls._sync_objs[obj] = (type_id, obj_id, set())
         cls._obj_id_cnt = obj_id
 
     @classmethod
     def changed(cls, obj, var_name):
         """Prepares update message
         """
-        print '%s@%s updated' % (var_name, obj)
+        cls._sync_objs[obj][2].add(var_name)
         # TODO: finish this
         # TODO: push update message to queue if in auto mode
 

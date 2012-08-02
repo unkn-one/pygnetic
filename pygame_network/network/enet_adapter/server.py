@@ -44,11 +44,9 @@ class Server(object):
                                     ' hash incorrect', event.peer.address)
                     event.peer.disconnect_now()
             elif event.type == enet.EVENT_TYPE_DISCONNECT:
-                _logger.info('Disconnected from %s', event.peer.address)
                 self.peers[event.peer.data]._disconnect()
                 del self.peers[event.peer.data]
             elif event.type == enet.EVENT_TYPE_RECEIVE:
-                _logger.info('Received data from %s', event.peer.address)
                 self.peers[event.peer.data]._receive(event.packet.data, event.channelID)
             event = host.check_events()
 

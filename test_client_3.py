@@ -1,17 +1,17 @@
 import random
 import logging
 import pygame
-from pygame.locals import *
+from pygame.locals import KEYDOWN, QUIT, K_ESCAPE, K_SPACE, K_l
 import pygame_network as net
 
 
-def message_status(screen, position, packets):
+def message_status(screen, position, messages):
     i = 0
-    keys = packets.keys()
+    keys = messages.keys()
     keys.sort()
     screen.fill(0x000000, (position[0], position[1], 350, 15))
     for k in keys:
-        msg1, msg2 = packets[k]
+        msg1, msg2 = messages[k]
         if msg2 is None:
             color = 0xffff00
         elif msg2 == msg1.upper():
@@ -48,7 +48,7 @@ def main():
 
     # Network init
     net.init(events=True, logging_lvl=logging.DEBUG)  # enable Pygame events
-    echo = net.register('echo', ('msg',))
+    echo = net.register('echo', ('msg', 'msg_id'))
     client = net.Client()
     connection = None
 
@@ -56,6 +56,7 @@ def main():
     run = True
     limit = True
     messages = {}
+    m_id = 0
 
     while run:
         events = pygame.event.get()
@@ -64,7 +65,7 @@ def main():
                 if e.key == K_SPACE:
                     if connection is not None:
                         if connection.state == net.State.CONNECTED:
-                            connection.disconnect_later()
+                            connection.disconnect()
                             connection_status(screen, (140, 38), False)
                     else:
                         connection = client.connect("localhost", 54301)
@@ -84,7 +85,7 @@ def main():
                 elif e.net_type == net.event.NET_RECEIVED:
                     if e.msg_type == echo:
                         msg = e.message.msg
-                        messages[e.msg_id][1] = msg
+                        messages[e.message.msg_id][1] = msg
                         message_status(screen, (110, 62), messages)
             if e.type == QUIT or e.type == KEYDOWN and e.key == K_ESCAPE:
                 run = False
@@ -92,7 +93,8 @@ def main():
             msg = ''.join(random.sample('abcdefghijklmnopqrstuvwxyz', 10))
 
             # Sending messages
-            m_id = connection.net_echo(msg)
+            m_id += 1
+            connection.net_echo(msg, m_id)
 
             messages[m_id] = [msg, None]
             message_status(screen, (110, 62), messages)

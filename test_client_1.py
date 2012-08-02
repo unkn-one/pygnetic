@@ -5,7 +5,7 @@ import pygame_network as net
 
 def main():
     net.init(logging_lvl=logging.DEBUG)
-    net.register('echo', ('msg',))
+    net.register('echo', ('msg', 'msg_id'))
     client = net.Client()
     connection = client.connect("localhost", 54301)
     counter = 0
@@ -14,8 +14,10 @@ def main():
         if counter < 10 and connection.state == net.State.CONNECTED:
             msg = ''.join(random.sample('abcdefghijklmnopqrstuvwxyz', 10))
             logging.info('Sending: %s', msg)
-            connection.net_echo(msg)
+            connection.net_echo(msg, counter)
             counter += 1
+            if counter == 10:
+                connection.disconnect()
 
 
 if __name__ == '__main__':

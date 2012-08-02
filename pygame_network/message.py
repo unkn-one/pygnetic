@@ -1,7 +1,6 @@
 import logging
 from collections import namedtuple
 from weakref import WeakKeyDictionary, WeakValueDictionary
-import enet
 
 __all__ = ('MessageFactory', 'MessageError')
 _logger = logging.getLogger(__name__)
@@ -65,25 +64,23 @@ class MessageFactory(object):
         return packet
 
     @classmethod
-    def pack(cls, message_id, message):
+    def pack(cls, message, sys_data=[]):
         """Pack data to string
 
         MessageFactory.pack(packet_id, packet_obj): return string
 
-        message_id - identifier of message
         message - object of class created by register
 
         Returns message packed in string, ready to send.
         """
         type_id = cls._message_params[message.__class__][0]
-        message = (type_id, message_id) + message
-        cls._message_cnt = message_id
+        message = (type_id,) + tuple(sys_data) + message
         data = s_lib.pack(message)
         _logger.debug("Packing message (length: %d)", len(data))
         return data
 
     @classmethod
-    def unpack(cls, data):
+    def unpack(cls, data, sys_data=[]):
         """Unpack data from string, return message_id and message
 
         MessageFactory.unpack(data): return (message_id, message)
@@ -92,14 +89,16 @@ class MessageFactory(object):
         """
         _logger.debug("Unpacking message (length: %d)", len(data))
         message = s_lib.unpack(data)
+        sys_data_l = len(sys_data)
         try:
-            type_id, packet_id = message[:2]
-            return packet_id, cls._message_types[type_id](*message[2:])
+            type_id = message[0]
+            sys_data[:] = message[1:1 + sys_data_l]
+            return cls._message_types[type_id](*message[1 + sys_data_l:])
         except KeyError:
             _logger.warning('Unknown message type_id: %s', type_id)
         except:
             _logger.warning('Message unpacking error: %s', message)
-        return None, None
+        return None
 
     @classmethod
     def get_by_name(cls, name):

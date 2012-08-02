@@ -5,34 +5,29 @@ import pygame_network as net
 
 class EchoHandler(net.Handler):
     def __init__(self):
-        self.connected = None
         self.counter = 10
 
-    def net_echo(self, channel, message_id, message):
-        logging.info('Received message #%d @ch%d: %s', message_id, channel, message)
-
-    def on_connect(self):
-        self.connected = True
-
-    def on_disconnect(self):
-        self.connected = False
+    def net_echo(self, message, channel):
+        logging.info('Received message @ch%d: %s', channel, message)
 
     def step(self):
-        if self.counter > 0 and self.connected == True:
+        if self.counter > 0 and self.connection.state == net.State.CONNECTED:
             msg = ''.join(random.sample('abcdefghijklmnopqrstuvwxyz', 10))
             logging.info('Sending: %s', msg)
-            self.connection.net_echo(msg)
+            self.connection.net_echo(msg, self.counter)
             self.counter -= 1
+            if self.counter == 0:
+                self.connection.disconnect()
 
 
 def main():
     net.init(logging_lvl=logging.DEBUG)
-    net.register('echo', ('msg',))
+    net.register('echo', ('msg', 'msg_id'))
     client = net.Client()
     connection = client.connect("localhost", 54301)
     handler = EchoHandler()
     connection.add_handler(handler)
-    while handler.connected != False:
+    while True:
         client.step()
         handler.step()
 

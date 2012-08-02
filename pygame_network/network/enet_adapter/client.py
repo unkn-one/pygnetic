@@ -42,13 +42,10 @@ class Client(object):
         event = host.service(timeout)
         while event is not None:
             if event.type == enet.EVENT_TYPE_CONNECT:
-                _logger.info('Connected to %s', event.peer.address)
                 self._peers[event.peer.data]._connect()
             elif event.type == enet.EVENT_TYPE_DISCONNECT:
-                _logger.info('Disconnected from %s', event.peer.address)
                 self._peers[event.peer.data]._disconnect()
                 del self._peers[event.peer.data]
             elif event.type == enet.EVENT_TYPE_RECEIVE:
-                _logger.info('Received data from %s', event.peer.address)
                 self._peers[event.peer.data]._receive(event.packet.data, event.channelID)
             event = host.check_events()
