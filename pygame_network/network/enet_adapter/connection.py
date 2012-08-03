@@ -1,5 +1,4 @@
 import enet
-from ...message import MessageFactory
 from .. import base_adapter
 
 _state_mapping = {
@@ -31,7 +30,7 @@ class Connection(base_adapter.Connection):
         peer - Enet peer instance
     """
 
-    def __init__(self, parent, peer, message_factory=MessageFactory):
+    def __init__(self, parent, peer, message_factory=None):
         super(Connection, self).__init__(parent, message_factory)
         self.peer = peer
 

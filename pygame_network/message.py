@@ -88,17 +88,25 @@ class MessageFactory(object):
         data - packed message data as a string
         """
         _logger.debug("Unpacking message (length: %d)", len(data))
-        message = s_lib.unpack(data)
+        try:
+            message = s_lib.unpack(data)
+        except StopIteration:  # end of stream
+            _logger.warning('Not enough data to unpack')
+        except:
+            _logger.error('Data corrupted (No streaming support in library)')
+            return
         sys_data_l = len(sys_data)
         try:
             type_id = message[0]
             sys_data[:] = message[1:1 + sys_data_l]
             return cls._message_types[type_id](*message[1 + sys_data_l:])
         except KeyError:
-            _logger.warning('Unknown message type_id: %s', type_id)
+            # should not happen
+            # prevented by hash control during connection
+            _logger.error('Unknown message type_id: %s', type_id)
         except:
-            _logger.warning('Message unpacking error: %s', message)
-        return None
+            _logger.error('Message unpacking error: %s', message)
+        return
 
     @classmethod
     def get_by_name(cls, name):

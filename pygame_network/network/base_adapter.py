@@ -27,12 +27,18 @@ class Connection(object):
     * using send method with message as argument
 
     """
+    message_factory = MessageFactory
 
-    def __init__(self, parent, message_factory=MessageFactory):
+    def __init__(self, parent, message_factory=None, *args, **kwargs):
+        super(Connection, self).__init__(*args, **kwargs)
         self.parent = proxy(parent)
-        self._message_cnt = 0
-        self._message_factory = message_factory
+        if message_factory is not None:
+            self.message_factory = message_factory
         self._handlers = []
+        self.data_sent = 0
+        self.data_received = 0
+        self.messages_sent = 0
+        self.messages_received = 0
 
     def __getattr__(self, name):
         parts = name.split('_', 1)
@@ -76,10 +82,14 @@ class Connection(object):
                 (message.__doc__, int(e) - 1, int(f) - 1))
         data = self._message_factory.pack(message_)
         _logger.info('Sent %s message to %s:%s', name, *self.address)
+        self.data_sent += len(data)
+        self.messages_sent += 1
         return self._send_data(data, **params)
 
     def _receive(self, data, channel=0):
         message = self._message_factory.unpack(data)
+        if message is None:
+            return
         name = message.__class__.__name__
         _logger.info('Received %s message from %s:%s', name, *self.address)
         event.received(self, message, channel)
@@ -125,26 +135,26 @@ class Connection(object):
 
 class Server(object):
     message_factory = MessageFactory
-    handler_cls = None
+    handler = None
 
     def __init__(self, address='', port=0, connections_limit=4, *args, **kwargs):
         _logger.debug('Server created %s, connections limit: %d', address, connections_limit)
         self.message_factory._frozen = True
         _logger.debug('MessageFactory frozen')
-        self.peers = {}
+        self.conn_map = {}
 
     def step(self, timeout=0):
         pass
 
     def connections(self, exclude=None):
         if exclude is None:
-            return self.peers.itervalues()
+            return self.conn_map.itervalues()
         else:
-            return (c for c in self.peers.itervalues() if c not in exclude)
+            return (c for c in self.conn_map.itervalues() if c not in exclude)
 
     def handlers(self, exclude=None):
         if exclude is None:
-            return (c._handlers[0] for c in self.peers.itervalues())
+            return (c._handlers[0] for c in self.conn_map.itervalues())
         else:
-            return (c._handlers[0] for c in self.peers.itervalues() if c not in exclude)
+            return (c._handlers[0] for c in self.conn_map.itervalues() if c not in exclude)
 

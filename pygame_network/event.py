@@ -1,12 +1,18 @@
 __all__ = ('NETWORK',
-           'NET_CONNECTED',
            'NET_DISCONNECTED',
+           'NET_CONNECTED',
+           'NET_ACCEPTED',
            'NET_RECEIVED')
 
 NETWORK = 30
-NET_CONNECTED = 0
-NET_DISCONNECTED = 1
-NET_RECEIVED = 2
+NET_DISCONNECTED = 0
+NET_CONNECTED = 1
+NET_ACCEPTED = 2
+NET_RECEIVED = 3
+
+
+def accepted(connection):
+    pass
 
 
 def connected(connection):
@@ -27,6 +33,14 @@ def init(event_val=1):
     from pygame.event import Event
     from pygame.locals import USEREVENT
     NETWORK = USEREVENT + event_val
+
+    def _accepted(connection):
+        pygame.event.post(Event(NETWORK, {
+            'net_type': NET_ACCEPTED,
+            #'connection': proxy(connection)
+            'connection': connection
+        }))
+    accepted = _accepted
 
     def _connected(connection):
         pygame.event.post(Event(NETWORK, {

@@ -10,14 +10,14 @@ _logger = logging.getLogger(__name__)
 
 class Server(object):
     message_factory = MessageFactory
-    handler_cls = None
+    handler = None
 
-    def __init__(self, address='', port=0, connections_limit=4, *args, **kwargs):
+    def __init__(self, address='', port=0, con_limit=4, *args, **kwargs):
         address = enet.Address(address, port)
-        self.host = enet.Host(address, connections_limit, *args, **kwargs)
-        self.peers = {}
+        self.host = enet.Host(address, con_limit, *args, **kwargs)
+        self.conn_map = {}
         self._peer_cnt = 0
-        _logger.debug('Server created %s, connections limit: %d', address, connections_limit)
+        _logger.debug('Server created %s, connections limit: %d', address, con_limit)
         self.message_factory._frozen = True
         _logger.debug('MessageFactory frozen')
 
@@ -33,28 +33,28 @@ class Server(object):
                     peer_id = str(peer_id)
                     event.peer.data = peer_id
                     connection = Connection(self, event.peer, self.message_factory)
-                    if issubclass(self.handler_cls, Handler):
-                        handler = self.handler_cls()
+                    if issubclass(self.handler, Handler):
+                        handler = self.handler()
                         handler.server = proxy(self)
                         connection.add_handler(handler)
-                    self.peers[peer_id] = connection
+                    self.conn_map[peer_id] = connection
                     connection._connect()
                 else:
                     _logger.warning('Connection with %s refused, MessageFactory'\
                                     ' hash incorrect', event.peer.address)
                     event.peer.disconnect_now()
             elif event.type == enet.EVENT_TYPE_DISCONNECT:
-                self.peers[event.peer.data]._disconnect()
-                del self.peers[event.peer.data]
+                self.conn_map[event.peer.data]._disconnect()
+                del self.conn_map[event.peer.data]
             elif event.type == enet.EVENT_TYPE_RECEIVE:
-                self.peers[event.peer.data]._receive(event.packet.data, event.channelID)
+                self.conn_map[event.peer.data]._receive(event.packet.data, event.channelID)
             event = host.check_events()
 
     def connections(self, exclude=None):
         if exclude is None:
-            return self.peers.itervalues()
+            return self.conn_map.itervalues()
         else:
-            return (c for c in self.peers.itervalues() if c not in exclude)
+            return (c for c in self.conn_map.itervalues() if c not in exclude)
 
     def handlers(self, exclude=[]):
-        return (c._handlers[0] for c in self.peers.itervalues() if c not in exclude)
+        return (c._handlers[0] for c in self.conn_map.itervalues() if c not in exclude)

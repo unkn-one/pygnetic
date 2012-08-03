@@ -9,11 +9,14 @@ class EchoHandler(net.Handler):
         logging.info('message @ch%d: %s', channel, message)
 
 
+class Server(net.Server):
+    handler = EchoHandler
+
+
 def main():
     net.init(logging_lvl=logging.DEBUG)
     net.register('echo', ('msg', 'msg_id'))
-    server = net.Server(port=54301)
-    server.handler_cls = EchoHandler
+    server = Server(port=54301)
     logging.info('Listening')
     run = True
     while run:

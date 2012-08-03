@@ -1,29 +1,27 @@
 import logging
 from collections import deque
 from asyncore import dispatcher
+from .. import base_adapter
 from ...message import MessageFactory
 
 _logger = logging.getLogger(__name__)
 
 
-class Connection(dispatcher):
+class Connection(base_adapter.Connection, dispatcher):
     __send = dispatcher.send
+    rcvr_buffer_size = 2048
 
     def __init__(self, parent, socket, message_factory=MessageFactory):
         super(Connection, self).__init__(parent, message_factory)
-        self._buffer = deque()
+        self._queue = deque()
+        self.state = base_adapter.State.DISCONNECTED
 
     def _send_data(self, data, **kwargs):
-        pass
+        self._message_queue.append(data)
 
     def disconnect(self, *args):
         """Request a disconnection."""
         pass
-
-    @property
-    def state(self):
-        """Connection state."""
-        return None
 
     @property
     def address(self):
@@ -31,16 +29,17 @@ class Connection(dispatcher):
         return None, None
 
     def handle_read(self):
-        self.log_info('unhandled read event', 'warning')
+        self._receive(self.recv(self.rcvr_buffer_size))
 
     def handle_write(self):
-        self.log_info('unhandled write event', 'warning')
+        #queue, self._queue = self._queue, deque()
+        for data in self._queue:
+            self.__send(data)
+        self._queue = deque()
 
     def handle_connect(self):
-        self.log_info('unhandled connect event', 'warning')
-
-    def handle_accept(self):
-        self.log_info('unhandled accept event', 'warning')
+        self.state = base_adapter.State.CONNECTED
+        self._connect()
 
     def handle_close(self):
         self.log_info('unhandled close event', 'warning')
