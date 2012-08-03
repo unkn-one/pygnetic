@@ -5,8 +5,43 @@ import syncobject
 from handler import Handler
 from network.base_adapter import State
 
+_logger = logging.getLogger(__name__)
 _network_module = None
+_serialization_module = None
 register = message.MessageFactory.register
+
+
+class Client(object):
+    def __new__(cls, *args, **kwargs):
+        "Create instance of Client class depending on selected network adapter"
+        return _network_module.Client(*args, **kwargs)
+
+
+class Server(object):
+    def __new__(cls, *args, **kwargs):
+        "Create instance of Server class depending on selected network adapter"
+        return _network_module.Server(*args, **kwargs)
+
+
+def _find_adapter(a_type, names):
+    """Find and return first found adapter
+
+    a_type - adapter type
+    names - string or list of strings with names of libraries
+    """
+    if isinstance(names, basestring):
+        names = (names,)
+    for name in names:
+        a_name = name + '_adapter'
+        try:
+            _logger.debug("Trying to import %s.%s", a_type, a_name)
+            return import_module('.'.join((__name__, a_type, a_name)))
+        except ImportError as e:
+            _logger.debug("%s: %s", e.__class__.__name__, e.message)
+        finally:
+            _logger.info("Using %s %s module", name, a_type)
+    else:
+        _logger.critical("Can't find any %s module", a_type)
 
 
 def init(events=False, event_val=1, logging_lvl=logging.INFO,
@@ -25,48 +60,15 @@ def init(events=False, event_val=1, logging_lvl=logging.INFO,
     Note: Because of the dynamic loading of network library adapter, Client,
         Server and State classes will only be available after initialization.
     """
-    global _network_module
-    _logger = logging.getLogger(__name__)
+    global _network_module, _serialization_module
     if logging_lvl is not None:
         logging.basicConfig(level=logging_lvl,
                             format='%(asctime)-8s %(levelname)-8s %(message)s',
                             datefmt='%H:%M:%S')
-    if isinstance(network, basestring):
-        network = (network,)
-    if isinstance(serialization, basestring):
-        serialization = (serialization,)
-    for name in network:
-        try:
-            _logger.debug("Trying to import network.%s_adapter", name)
-            _network_module = import_module('pygame_network.network.%s_adapter' % name)
-            break
-        except ImportError as e:
-            _logger.debug("%s: %s", e.__class__.__name__, e.message)
-    else:
-        _logger.critical("Can't find any network module")
-        return
-    _logger.info("Using %s network module", name)
-    for name in serialization:
-        try:
-            _logger.debug("Trying to import serialization.%s_adapter", name)
-            smod = import_module('pygame_network.serialization.%s_adapter' % name)
-            break
-        except ImportError:
-            _logger.debug("%s: %s", e.__class__.__name__, e.message)
-    else:
-        _logger.critical("Can't find any serialization module")
-        return
-    message.s_lib = smod
-    _logger.info("Using %s serialization module", name)
+    _network_module = _find_adapter('network', network)
+    _serialization_module = _find_adapter('serialization', serialization)
+    message.s_lib = _serialization_module
     if events:
         _logger.info("Enabling pygame events")
         import event
         event.init(event_val)
-
-
-def Client(*args, **kwargs):
-    return _network_module.Client(*args, **kwargs)
-
-
-def Server(*args, **kwargs):
-    return _network_module.Server(*args, **kwargs)
