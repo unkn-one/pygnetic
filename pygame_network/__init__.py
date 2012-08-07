@@ -14,13 +14,27 @@ register = message.MessageFactory.register
 class Client(object):
     def __new__(cls, *args, **kwargs):
         "Create instance of Client class depending on selected network adapter"
-        return _network_module.Client(*args, **kwargs)
+        b = cls.__bases__
+        if Client in b:  # creation by inheritance
+            i = b.index(Client) + 1
+            cls.__bases__ = b[:i] + (_network_module.Client,) + b[i:]
+            return super(cls, cls).__new__(cls, *args, **kwargs)
+        else:  # direct object creation
+            # can't assign to __bases__ - bugs.python.org/issue672115
+            return _network_module.Client(*args, **kwargs)
 
 
 class Server(object):
     def __new__(cls, *args, **kwargs):
         "Create instance of Server class depending on selected network adapter"
-        return _network_module.Server(*args, **kwargs)
+        b = cls.__bases__
+        if Server in b:  # creation by inheritance
+            i = b.index(Server) + 1
+            cls.__bases__ = b[:i] + (_network_module.Server,) + b[i:]
+            return super(Server, cls).__new__(cls, *args, **kwargs)
+        else:  # direct object creation
+            # can't assign to __bases__ - bugs.python.org/issue672115
+            return _network_module.Server(*args, **kwargs)
 
 
 def _find_adapter(a_type, names):
