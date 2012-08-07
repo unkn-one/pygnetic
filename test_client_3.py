@@ -64,7 +64,7 @@ def main():
             if e.type == KEYDOWN:
                 if e.key == K_SPACE:
                     if connection is not None:
-                        if connection.state == net.State.CONNECTED:
+                        if connection.connected:
                             connection.disconnect()
                             connection_status(screen, (140, 38), False)
                     else:
@@ -89,7 +89,7 @@ def main():
                         message_status(screen, (110, 62), messages)
             if e.type == QUIT or e.type == KEYDOWN and e.key == K_ESCAPE:
                 run = False
-        if len(messages) < 10 and connection is not None and connection.state == net.State.CONNECTED:
+        if len(messages) < 10 and connection is not None and connection.connected:
             msg = ''.join(random.sample('abcdefghijklmnopqrstuvwxyz', 10))
 
             # Sending messages

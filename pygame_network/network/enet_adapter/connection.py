@@ -1,19 +1,6 @@
 import enet
 from .. import base_adapter
 
-_state_mapping = {
-    enet.PEER_STATE_ACKNOWLEDGING_CONNECT: base_adapter.State.CONNECTING,
-    enet.PEER_STATE_ACKNOWLEDGING_DISCONNECT: base_adapter.State.DISCONNECTING,
-    enet.PEER_STATE_CONNECTED: base_adapter.State.CONNECTED,
-    enet.PEER_STATE_CONNECTING: base_adapter.State.CONNECTING,
-    enet.PEER_STATE_CONNECTION_PENDING: base_adapter.State.CONNECTING,
-    enet.PEER_STATE_CONNECTION_SUCCEEDED: base_adapter.State.CONNECTING,
-    enet.PEER_STATE_DISCONNECTED: base_adapter.State.DISCONNECTED,
-    enet.PEER_STATE_DISCONNECTING: base_adapter.State.DISCONNECTING,
-    enet.PEER_STATE_DISCONNECT_LATER: base_adapter.State.DISCONNECTING,
-    enet.PEER_STATE_ZOMBIE: base_adapter.State.DISCONNECTING
-}
-
 
 class Connection(base_adapter.Connection):
     """Class allowing to send messages
@@ -56,9 +43,9 @@ class Connection(base_adapter.Connection):
             self.peer.disconnect_now()
 
     @property
-    def state(self):
+    def connected(self):
         """Connection state."""
-        return _state_mapping[self.peer.state]
+        return self.peer.state == enet.PEER_STATE_CONNECTED
 
     @property
     def address(self):

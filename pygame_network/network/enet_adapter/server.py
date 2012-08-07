@@ -2,23 +2,24 @@ import logging
 from weakref import proxy
 import enet
 from ...handler import Handler
-from ...message import MessageFactory
+from ... import message
 from connection import Connection
 
 _logger = logging.getLogger(__name__)
 
 
 class Server(object):
-    message_factory = MessageFactory
+    message_factory = message.message_factory
     handler = None
 
     def __init__(self, address='', port=0, con_limit=4, *args, **kwargs):
+        super(Server, self).__init__(*args, **kwargs)
         address = enet.Address(address, port)
         self.host = enet.Host(address, con_limit, *args, **kwargs)
         self.conn_map = {}
         self._peer_cnt = 0
         _logger.debug('Server created %s, connections limit: %d', address, con_limit)
-        self.message_factory._frozen = True
+        self.message_factory.set_frozen()
         _logger.debug('MessageFactory frozen')
 
 
@@ -33,7 +34,7 @@ class Server(object):
                     peer_id = str(peer_id)
                     event.peer.data = peer_id
                     connection = Connection(self, event.peer, self.message_factory)
-                    if issubclass(self.handler, Handler):
+                    if self.handler is not None and issubclass(self.handler, Handler):
                         handler = self.handler()
                         handler.server = proxy(self)
                         connection.add_handler(handler)

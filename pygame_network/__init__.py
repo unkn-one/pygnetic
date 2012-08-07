@@ -3,12 +3,11 @@ from importlib import import_module
 import message
 import syncobject
 from handler import Handler
-from network.base_adapter import State
 
 _logger = logging.getLogger(__name__)
 _network_module = None
 _serialization_module = None
-register = message.MessageFactory.register
+register = message.message_factory.register
 
 
 class Client(object):

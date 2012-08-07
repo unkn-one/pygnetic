@@ -4,9 +4,9 @@ import pygame_network as net
 
 class EchoHandler(net.Handler):
     def net_echo(self, message, channel):
+        logging.info('Received message @ch%d: %s', channel, message)
         msg = message.msg.upper()
         self.connection.net_echo(msg, message.msg_id)
-        logging.info('message @ch%d: %s', channel, message)
 
 
 class Server(net.Server):

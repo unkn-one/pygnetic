@@ -1,6 +1,6 @@
 import logging
 import enet
-from ...message import MessageFactory
+from ... import message
 from connection import Connection
 
 _logger = logging.getLogger(__name__)
@@ -15,19 +15,20 @@ class Client(object):
         while True:
             client.step()
     """
-    def __init__(self, connections_limit=1, channel_limit=0, in_bandwidth=0, out_bandwidth=0):
-        self.host = enet.Host(None, connections_limit, channel_limit, in_bandwidth, out_bandwidth)
+    def __init__(self, connections_limit=1, *args, **kwargs):
+        super(Client, self).__init__(*args, **kwargs)
+        self.host = enet.Host(None, connections_limit)
         self._peers = {}
         self._peer_cnt = 0
         _logger.debug('Client created, connections limit: %d', connections_limit)
 
-    def connect(self, address, port, channels=2, message_factory=MessageFactory):
+    def connect(self, address, port, channels=2, message_factory=message.message_factory):
         address = enet.Address(address, port)
         _logger.info('Connecting to %s', address)
         peer_id = self._peer_cnt = self._peer_cnt + 1
         peer_id = str(peer_id)
         # Can't register messages after connection
-        message_factory._frozen = True
+        message_factory.set_frozen()
         _logger.debug('MessageFactory frozen')
         peer = self.host.connect(address, channels, message_factory.get_hash())
         peer.data = peer_id
