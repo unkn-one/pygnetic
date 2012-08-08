@@ -2,12 +2,12 @@ import logging
 import socket
 import asyncore
 from collections import deque
-from .. import base_adapter
+from .. import connection, server, client
 
 _logger = logging.getLogger(__name__)
 
 
-class Connection(base_adapter.Connection, asyncore.dispatcher):
+class Connection(connection.Connection, asyncore.dispatcher):
     __send = asyncore.dispatcher.send
     # maximum amount of data received / sent at once
     recv_buffer_size = 4096
