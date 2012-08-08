@@ -23,7 +23,7 @@ def disconnected(connection):
     pass
 
 
-def received(connection, message, channel):
+def received(connection, message):
     pass
 
 
@@ -63,7 +63,6 @@ def init(event_val=1):
             'net_type': NET_RECEIVED,
             #'connection': proxy(connection),
             'connection': connection,
-            'channel': channel,
             'message': message,
             'msg_type': message.__class__
         }))

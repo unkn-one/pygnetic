@@ -1,52 +1,37 @@
 import logging
 import enet
-from ... import message
+from .. import base_adapter
 from connection import Connection
 
 _logger = logging.getLogger(__name__)
 
 
-class Client(object):
-    """Class representing network client
+class Client(base_adapter.Client):
+    connection = Connection
 
-    Example:
-        client = pygame_network.client.Client()
-        connection = client.connect("localhost", 10000)
-        while True:
-            client.step()
-    """
-    def __init__(self, connections_limit=1, *args, **kwargs):
+    def __init__(self, conn_limit=1, *args, **kwargs):
         super(Client, self).__init__(*args, **kwargs)
-        self.host = enet.Host(None, connections_limit)
-        self._peers = {}
+        self.host = enet.Host(None, conn_limit)
         self._peer_cnt = 0
-        _logger.debug('Client created, connections limit: %d', connections_limit)
 
-    def connect(self, address, port, channels=2, message_factory=message.message_factory):
+    def _create_connection(self, address, port, mf_hash, channels=1, **kwargs):
         address = enet.Address(address, port)
-        _logger.info('Connecting to %s', address)
         peer_id = self._peer_cnt = self._peer_cnt + 1
         peer_id = str(peer_id)
-        # Can't register messages after connection
-        message_factory.set_frozen()
-        _logger.debug('MessageFactory frozen')
-        peer = self.host.connect(address, channels, message_factory.get_hash())
+        peer = self.host.connect(address, channels, mf_hash)
         peer.data = peer_id
-        connection = Connection(self, peer, message_factory)
-        self._peers[peer_id] = connection
-        return connection
+        return peer, peer_id
 
-    def step(self, timeout=0):
-        if len(self._peers) == 0:
+    def update(self, timeout=0):
+        if len(self.conn_map) == 0:
             return
         host = self.host
         event = host.service(timeout)
         while event is not None:
             if event.type == enet.EVENT_TYPE_CONNECT:
-                self._peers[event.peer.data]._connect()
+                self._connect(event.peer.data)
             elif event.type == enet.EVENT_TYPE_DISCONNECT:
-                self._peers[event.peer.data]._disconnect()
-                del self._peers[event.peer.data]
+                self._disconnect(event.peer.data)
             elif event.type == enet.EVENT_TYPE_RECEIVE:
-                self._peers[event.peer.data]._receive(event.packet.data, event.channelID)
+                self._receive(event.peer.data, event.packet.data, channel=event.channelID)
             event = host.check_events()

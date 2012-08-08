@@ -1,61 +1,34 @@
 import logging
-from weakref import proxy
 import enet
-from ...handler import Handler
 from ... import message
+from .. import base_adapter
 from connection import Connection
 
 _logger = logging.getLogger(__name__)
 
 
-class Server(object):
-    message_factory = message.message_factory
-    handler = None
+class Server(base_adapter.Server):
+    connection = Connection
 
     def __init__(self, address='', port=0, con_limit=4, *args, **kwargs):
-        super(Server, self).__init__(*args, **kwargs)
+        super(Server, self).__init__(address, port, con_limit, *args, **kwargs)
         address = enet.Address(address, port)
         self.host = enet.Host(address, con_limit, *args, **kwargs)
-        self.conn_map = {}
         self._peer_cnt = 0
-        _logger.debug('Server created %s, connections limit: %d', address, con_limit)
-        self.message_factory.set_frozen()
-        _logger.debug('MessageFactory frozen')
 
-
-    def step(self, timeout=0):
+    def update(self, timeout=0):
         host = self.host
         event = host.service(timeout)
         while event is not None:
             if event.type == enet.EVENT_TYPE_CONNECT:
-                if event.data == self.message_factory.get_hash():
-                    _logger.info('Connection with %s accepted', event.peer.address)
-                    peer_id = self._peer_cnt = self._peer_cnt + 1
-                    peer_id = str(peer_id)
+                peer_id = str(self._peer_cnt + 1)
+                if self._accept(event.data, event.peer, peer_id, event.peer.address):
                     event.peer.data = peer_id
-                    connection = Connection(self, event.peer, self.message_factory)
-                    if self.handler is not None and issubclass(self.handler, Handler):
-                        handler = self.handler()
-                        handler.server = proxy(self)
-                        connection.add_handler(handler)
-                    self.conn_map[peer_id] = connection
-                    connection._connect()
+                    self._peer_cnt += 1
                 else:
-                    _logger.warning('Connection with %s refused, MessageFactory'\
-                                    ' hash incorrect', event.peer.address)
                     event.peer.disconnect_now()
             elif event.type == enet.EVENT_TYPE_DISCONNECT:
-                self.conn_map[event.peer.data]._disconnect()
-                del self.conn_map[event.peer.data]
+                self._disconnect(event.peer.data)
             elif event.type == enet.EVENT_TYPE_RECEIVE:
-                self.conn_map[event.peer.data]._receive(event.packet.data, event.channelID)
+                self._receive(event.peer.data, event.packet.data, channel=event.channelID)
             event = host.check_events()
-
-    def connections(self, exclude=None):
-        if exclude is None:
-            return self.conn_map.itervalues()
-        else:
-            return (c for c in self.conn_map.itervalues() if c not in exclude)
-
-    def handlers(self, exclude=[]):
-        return (c._handlers[0] for c in self.conn_map.itervalues() if c not in exclude)

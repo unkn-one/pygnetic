@@ -3,7 +3,8 @@ import pygame_network as net
 
 
 class EchoHandler(net.Handler):
-    def net_echo(self, message, channel):
+    def net_echo(self, message, **kwargs):
+        channel = kwargs.get('channel', 0)
         logging.info('Received message @ch%d: %s', channel, message)
         msg = message.msg.upper()
         self.connection.net_echo(msg, message.msg_id)
@@ -20,7 +21,7 @@ def main():
     logging.info('Listening')
     run = True
     while run:
-        server.step(1000)
+        server.update(1000)
 
 
 if __name__ == '__main__':

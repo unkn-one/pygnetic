@@ -98,7 +98,7 @@ def main():
 
             messages[m_id] = [msg, None]
             message_status(screen, (110, 62), messages)
-        client.step()
+        client.update()
         pygame.display.flip()
         if limit:
             clock.tick(4)

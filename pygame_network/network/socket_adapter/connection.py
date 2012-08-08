@@ -3,7 +3,6 @@ import socket
 import asyncore
 from collections import deque
 from .. import base_adapter
-from ...message import MessageFactory
 
 _logger = logging.getLogger(__name__)
 
@@ -13,8 +12,11 @@ class Connection(base_adapter.Connection, asyncore.dispatcher):
     # maximum amount of data received / sent at once
     recv_buffer_size = 4096
 
-    def __init__(self, parent, socket, message_factory=MessageFactory):
-        super(Connection, self).__init__(parent, message_factory)
+    def __init__(self, parent, socket, message_factory, *args, **kwargs):
+        super(Connection, self).__init__(
+            parent, message_factory, # params for base_adapter.Connection
+            socket, parent.conn_map, # params for asyncore.dispatcher
+            * args, **kwargs)
         #self.send_queue = deque()
         self.send_buffer = bytearray()
         self.recv_buffer = bytearray(b'\0' * self.recv_buffer_size)
@@ -65,17 +67,15 @@ class Connection(base_adapter.Connection, asyncore.dispatcher):
         self._connect()
 
     def handle_close(self):
-        self.log_info('unhandled close event', 'warning')
+        self._disconnect()
         self.close()
 
     def log_info(self, message, type='info'):
         return getattr(_logger, type)(message)
 
     def disconnect(self, *args):
-        """Request a disconnection."""
         pass
 
     @property
     def address(self):
-        """Connection address."""
-        return self.getpeername()
+        return self.addr

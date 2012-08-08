@@ -8,11 +8,12 @@ class EchoHandler(net.Handler):
         self.out_counter = 0
         self.in_counter = 0
 
-    def net_echo(self, message, channel):
+    def net_echo(self, message, **kwargs):
+        channel = kwargs.get('channel', 0)
         logging.info('Received message @ch%d: %s', channel, message)
         self.in_counter += 1
 
-    def step(self):
+    def update(self):
         if self.out_counter < 10 and self.connection.connected:
             msg = ''.join(random.sample('abcdefghijklmnopqrstuvwxyz', 10))
             logging.info('Sending: %s', msg)
@@ -30,8 +31,8 @@ def main():
     handler = EchoHandler()
     connection.add_handler(handler)
     while True:
-        client.step()
-        handler.step()
+        client.update()
+        handler.update()
 
 
 if __name__ == '__main__':
