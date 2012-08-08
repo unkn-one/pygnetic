@@ -1,8 +1,10 @@
 import logging
-from importlib import import_module
 import message
 import syncobject
+import network
+import serialization
 from handler import Handler
+from network import Server, Client
 
 _logger = logging.getLogger(__name__)
 _network_module = None
@@ -10,64 +12,17 @@ _serialization_module = None
 register = message.message_factory.register
 
 
-class Client(object):
-    def __new__(cls, *args, **kwargs):
-        "Create instance of Client class depending on selected network adapter"
-        b = cls.__bases__
-        if Client in b:  # creation by inheritance
-            i = b.index(Client) + 1
-            cls.__bases__ = b[:i] + (_network_module.Client,) + b[i:]
-            return super(cls, cls).__new__(cls, *args, **kwargs)
-        else:  # direct object creation
-            # can't assign to __bases__ - bugs.python.org/issue672115
-            return _network_module.Client(*args, **kwargs)
-
-
-class Server(object):
-    def __new__(cls, *args, **kwargs):
-        "Create instance of Server class depending on selected network adapter"
-        b = cls.__bases__
-        if Server in b:  # creation by inheritance
-            i = b.index(Server) + 1
-            cls.__bases__ = b[:i] + (_network_module.Server,) + b[i:]
-            return super(Server, cls).__new__(cls, *args, **kwargs)
-        else:  # direct object creation
-            # can't assign to __bases__ - bugs.python.org/issue672115
-            return _network_module.Server(*args, **kwargs)
-
-
-def _find_adapter(a_type, names):
-    """Find and return first found adapter
-
-    a_type - adapter type
-    names - string or list of strings with names of libraries
-    """
-    if isinstance(names, basestring):
-        names = (names,)
-    for name in names:
-        a_name = name + '_adapter'
-        try:
-            _logger.debug("Trying to import %s.%s", a_type, a_name)
-            return import_module('.'.join((__name__, a_type, a_name)))
-        except ImportError as e:
-            _logger.debug("%s: %s", e.__class__.__name__, e.message)
-        finally:
-            _logger.info("Using %s %s module", name, a_type)
-    else:
-        _logger.critical("Can't find any %s module", a_type)
-
-
 def init(events=False, event_val=1, logging_lvl=logging.INFO,
-         network=('enet',), serialization=('msgpack', 'json')):
+         network_m=('enet',), serialization_m=('msgpack', 'json')):
     """Initialize network library.
 
     events - allow sending Pygame events (default False)
     event_val - set event ID as event_val + pygame.USEREVENT (default 1)
     logging_lvl - level of logging messages (default logging.INFO, None to skip
                   initializing logging module
-    network - string or list of strings with names of network library adapters,
-              first available will be used
-    serialization - string or list of strings with names of serialization
+    network_m - string or list of strings with names of network
+              library adapters, first available will be used
+    serialization_m - string or list of strings with names of serialization
                     library adapters, first available will be used
 
     Note: Because of the dynamic loading of network library adapter, Client,
@@ -78,9 +33,18 @@ def init(events=False, event_val=1, logging_lvl=logging.INFO,
         logging.basicConfig(level=logging_lvl,
                             format='%(asctime)-8s %(levelname)-8s %(message)s',
                             datefmt='%H:%M:%S')
-    _network_module = _find_adapter('network', network)
-    _serialization_module = _find_adapter('serialization', serialization)
-    message.s_lib = _serialization_module
+    network.select_adapter(network_m)
+    if network._selected_adapter is not None:
+        _logger.info("Using %s",
+            network._selected_adapter.__name__.split('.')[-1])
+    else:
+        _logger.critical("Can't find any network module")
+    serialization.select_adapter(serialization_m)
+    if serialization._selected_adapter is not None:
+        _logger.info("Using %s",
+            serialization._selected_adapter.__name__.split('.')[-1])
+    else:
+        _logger.critical("Can't find any serialization module")
     if events:
         _logger.info("Enabling pygame events")
         import event

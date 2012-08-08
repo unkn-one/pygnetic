@@ -1,10 +1,10 @@
 import logging
 from collections import namedtuple
 from weakref import WeakKeyDictionary, WeakValueDictionary
+import serialization
 
 __all__ = ('MessageFactory', 'MessageError')
 _logger = logging.getLogger(__name__)
-s_lib = None
 
 
 class MessageError(Exception):
@@ -64,7 +64,7 @@ class MessageFactory(object):
         """
         type_id = self._message_params[message.__class__][0]
         message = (type_id,) + message
-        data = s_lib.pack(message)
+        data = serialization.pack(message)
         _logger.debug("Packing message (length: %d)", len(data))
         return data
 
@@ -72,7 +72,7 @@ class MessageFactory(object):
         self._frozen = True
 
     def reset_context(self, context):
-        context._unpacker = s_lib.unpacker()
+        context._unpacker = serialization.unpacker()
 
     def _process_message(self, message):
         try:
@@ -92,7 +92,7 @@ class MessageFactory(object):
         """
         _logger.debug("Unpacking message (length: %d)", len(data))
         try:
-            message = s_lib.unpack(data)
+            message = serialization.unpack(data)
         except:
             _logger.error('Data corrupted')
             self._reset_unpacker()  # prevent from corrupting next data
@@ -157,7 +157,7 @@ class MessageFactory(object):
                 ids = self._message_types.keys()
                 ids.sort()
                 l = list()
-                l.append(s_lib.__name__)
+                l.append(serialization._selected_adapter.__name__)
                 for i in ids:
                     p = self._message_types[i]
                     l.append((i, p.__name__, p._fields))
