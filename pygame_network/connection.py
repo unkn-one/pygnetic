@@ -80,7 +80,7 @@ class Connection(object):
             raise TypeError('%s takes exactly %d arguments (%d given)' %
                 (message.__doc__, int(e) - 1, int(f) - 1))
         data = self.message_factory.pack(message_)
-        _logger.info('Sent %s message to %s:%s', name, *self.address)
+        _logger.info('Sent %s message to %s', name, self.address)
         self.data_sent += len(data)
         self.messages_sent += 1
         return self._send_data(data, **params)
@@ -88,19 +88,19 @@ class Connection(object):
     def _receive(self, data, **kwargs):
         for message in self.message_factory.unpack_all(data, self):
             name = message.__class__.__name__
-            _logger.info('Received %s message from %s:%s', name, *self.address)
+            _logger.info('Received %s message from %s', name, self.address)
             event.received(self, message)
             for h in self.handlers:
                 getattr(h, 'net_' + name, h.on_recive)(message, **kwargs)
 
     def _connect(self):
-        _logger.info('Connected to %s:%s', *self.address)
+        _logger.info('Connected to %s', self.address)
         event.connected(self)
         for h in self.handlers:
             h.on_connect()
 
     def _disconnect(self):
-        _logger.info('Disconnected from %s:%s', *self.address)
+        _logger.info('Disconnected from %s', self.address)
         event.disconnected(self)
         for h in self.handlers:
             h.on_disconnect()
@@ -122,4 +122,4 @@ class Connection(object):
     @property
     def address(self):
         """Connection address."""
-        return None, None
+        return '', ''

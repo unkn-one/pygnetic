@@ -69,6 +69,8 @@ class MessageFactory(object):
         return data
 
     def set_frozen(self):
+        """Disable ability to register new messages to allow generation of hash
+        """
         self._frozen = True
 
     def reset_context(self, context):
@@ -84,7 +86,7 @@ class MessageFactory(object):
             _logger.error('Message unpacking error: %s', message)
 
     def unpack(self, data):
-        """Unpack data from string and buffer, return message
+        """Unpack message from string
 
         MessageFactory.unpack(data): return message
 
@@ -174,7 +176,3 @@ update_remoteobject = message_factory.register('update_remoteobject', (
     'obj_id',
     'variables'
 ), channel=1, flags=0)
-chat_msg = message_factory.register('chat_msg', (
-    'player',
-    'msg'
-))

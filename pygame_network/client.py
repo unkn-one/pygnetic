@@ -20,16 +20,15 @@ class Client(object):
         self.conn_map = {}
         _logger.info('Client created, connections limit: %d', conn_limit)
 
-    def connect(self, address, port, message_factory=None, **kwargs):
+    def connect(self, host, port, message_factory=None, **kwargs):
         if message_factory is None:
             message_factory = self.message_factory
-        _logger.info('Connecting to %s:%d', address, port)
+        _logger.info('Connecting to %s:%d', host, port)
         message_factory.set_frozen()
-        socket, c_id = self._create_connection(address, port,
-            message_factory.get_hash(), **kwargs)
-        conn = self.connection(self, socket, message_factory)
-        self.conn_map[c_id] = conn
-        return conn
+        connection, c_id = self._create_connection(host, port,
+            message_factory, **kwargs)
+        self.conn_map[c_id] = connection
+        return connection
 
     def update(self, timeout=0):
         pass

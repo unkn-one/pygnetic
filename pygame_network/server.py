@@ -12,12 +12,13 @@ class Server(object):
     handler = None
     connection = None
 
-    def __init__(self, address='', port=0, conn_limit=4, *args, **kwargs):
+    def __init__(self, host='', port=0, conn_limit=4, *args, **kwargs):
         super(Server, self).__init__(*args, **kwargs)
         _logger.info('Server created %s:%d, connections limit: %d',
-                     address, port, conn_limit)
+                     host, port, conn_limit)
         self.message_factory.set_frozen()
         self.conn_map = {}
+        self.conn_limit = conn_limit
 
     def update(self, timeout=0):
         pass
@@ -58,3 +59,8 @@ class Server(object):
         else:
             return (c.handlers[0] for c in self.conn_map.itervalues()
                     if c not in exclude)
+
+    @property
+    def address(self):
+        """Server address."""
+        return None, None

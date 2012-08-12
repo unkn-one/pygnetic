@@ -15,7 +15,7 @@ class Server(net.Server):
 
 
 def main():
-    net.init(logging_lvl=logging.DEBUG)
+    net.init(logging_lvl=logging.DEBUG, n_module='socket')
     net.register('echo', ('msg', 'msg_id'))
     server = Server(port=54301)
     logging.info('Listening')

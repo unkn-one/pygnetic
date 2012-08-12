@@ -24,7 +24,7 @@ class EchoHandler(net.Handler):
 
 
 def main():
-    net.init(logging_lvl=logging.DEBUG)
+    net.init(logging_lvl=logging.DEBUG, n_module='socket')
     net.register('echo', ('msg', 'msg_id'))
     client = net.Client()
     connection = client.connect("localhost", 54301)

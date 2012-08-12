@@ -46,10 +46,10 @@ class Connection(connection.Connection):
 class Server(server.Server):
     connection = Connection
 
-    def __init__(self, address='', port=0, con_limit=4, *args, **kwargs):
-        super(Server, self).__init__(address, port, con_limit, *args, **kwargs)
-        address = enet.Address(address, port)
-        self.host = enet.Host(address, con_limit, *args, **kwargs)
+    def __init__(self, host='', port=0, con_limit=4, *args, **kwargs):
+        super(Server, self).__init__(host, port, con_limit, *args, **kwargs)
+        host = enet.Address(host, port)
+        self.host = enet.Host(host, con_limit, *args, **kwargs)
         self._peer_cnt = 0
 
     def update(self, timeout=0):
@@ -69,6 +69,12 @@ class Server(server.Server):
                 self._receive(event.peer.data, event.packet.data, channel=event.channelID)
             event = host.check_events()
 
+    @property
+    def address(self):
+        """Server address."""
+        address = self.host.address
+        return address.host, address.port
+
 
 class Client(client.Client):
     connection = Connection
@@ -78,13 +84,14 @@ class Client(client.Client):
         self.host = enet.Host(None, conn_limit)
         self._peer_cnt = 0
 
-    def _create_connection(self, address, port, mf_hash, channels=1, **kwargs):
-        address = enet.Address(address, port)
+    def _create_connection(self, host, port, message_factory, channels=1, **kwargs):
+        host = enet.Address(host, port)
         peer_id = self._peer_cnt = self._peer_cnt + 1
         peer_id = str(peer_id)
-        peer = self.host.connect(address, channels, mf_hash)
+        peer = self.host.connect(host, channels, message_factory.get_hash())
         peer.data = peer_id
-        return peer, peer_id
+        connection = Connection(self, peer, message_factory)
+        return connection, peer_id
 
     def update(self, timeout=0):
         if len(self.conn_map) == 0:

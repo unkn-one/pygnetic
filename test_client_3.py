@@ -47,7 +47,7 @@ def main():
     pygame.display.flip()
 
     # Network init
-    net.init(events=True, logging_lvl=logging.DEBUG)  # enable Pygame events
+    net.init(events=True, logging_lvl=logging.DEBUG, n_module='socket')  # enable Pygame events
     echo = net.register('echo', ('msg', 'msg_id'))
     client = net.Client()
     connection = None
