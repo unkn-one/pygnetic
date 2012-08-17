@@ -3,12 +3,16 @@
 
 from .. import _utils
 
-_selected_adapter = None
+selected_adapter = None
 
 
 def select_adapter(names):
-    global _selected_adapter
-    _selected_adapter = _utils.select_adapter(__name__, names)
+    global selected_adapter
+    selected_adapter = _utils.find_adapter(__name__, names)
+
+
+def get_adapter(name):
+    return _utils.find_adapter(__name__, name)
 
 
 class Client(object):
@@ -19,11 +23,11 @@ class Client(object):
         b = cls.__bases__
         if Client in b:  # creation by inheritance
             i = b.index(Client) + 1
-            cls.__bases__ = b[:i] + (_selected_adapter.Client,) + b[i:]
+            cls.__bases__ = b[:i] + (selected_adapter.Client,) + b[i:]
             return super(cls, cls).__new__(cls, *args, **kwargs)
         else:  # direct object creation
             # can't assign to __bases__ - bugs.python.org/issue672115
-            return _selected_adapter.Client(*args, **kwargs)
+            return selected_adapter.Client(*args, **kwargs)
 
 
 class Server(object):
@@ -34,8 +38,8 @@ class Server(object):
         b = cls.__bases__
         if Server in b:  # creation by inheritance
             i = b.index(Server) + 1
-            cls.__bases__ = b[:i] + (_selected_adapter.Server,) + b[i:]
+            cls.__bases__ = b[:i] + (selected_adapter.Server,) + b[i:]
             return super(Server, cls).__new__(cls, *args, **kwargs)
         else:  # direct object creation
             # can't assign to __bases__ - bugs.python.org/issue672115
-            return _selected_adapter.Server(*args, **kwargs)
+            return selected_adapter.Server(*args, **kwargs)

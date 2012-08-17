@@ -11,10 +11,11 @@ _logger = logging.getLogger(__name__)
 
 class MessageFactory(object):
     """Class allowing to register new message types and pack/unpack them."""
-    def __init__(self):
-        self._message_names = {}  # mapping name -> message
-        self._message_types = WeakValueDictionary()  # mapping type_id -> message
-        self._message_params = WeakKeyDictionary()  # mapping message -> type_id, send par
+    def __init__(self, s_adater=serialization._selected_adapter):
+        self._message_names = {}  # name -> message
+        self._message_types = WeakValueDictionary()  # type_id -> message
+        self._message_params = WeakKeyDictionary()  # message -> type_id, send par
+        self.s_adapter = s_adater
         self._type_id_cnt = 0
         self._frozen = False
         self._hash = None
@@ -45,7 +46,7 @@ class MessageFactory(object):
         """
         type_id = self._message_params[message.__class__][0]
         message = (type_id,) + message
-        data = serialization.pack(message)
+        data = self.s_adapter.pack(message)
         _logger.debug("Packing message (length: %d)", len(data))
         return data
 
@@ -60,7 +61,7 @@ class MessageFactory(object):
 
         :param context: object which will be prepared
         """
-        context._unpacker = serialization.unpacker()
+        context._unpacker = self.s_adapter.unpacker()
 
     def _process_message(self, message):
         try:
@@ -79,7 +80,7 @@ class MessageFactory(object):
         """
         _logger.debug("Unpacking message (length: %d)", len(data))
         try:
-            message = serialization.unpack(data)
+            message = self.s_adapter.unpack(data)
         except:
             _logger.error('Data corrupted')
             self._reset_unpacker()  # prevent from corrupting next data
@@ -139,7 +140,7 @@ class MessageFactory(object):
                 ids = self._message_types.keys()
                 ids.sort()
                 l = list()
-                l.append(serialization._selected_adapter.__name__)
+                l.append(self.s_adapter.__name__)
                 for i in ids:
                     p = self._message_types[i]
                     l.append((i, p.__name__, p._fields))
