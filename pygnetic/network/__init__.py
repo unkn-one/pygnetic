@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+"""Network adapters."""
+
 from .. import _utils
 
 _selected_adapter = None
@@ -9,6 +12,8 @@ def select_adapter(names):
 
 
 class Client(object):
+    "Class creating its instance based on selected :term:`network adapter`."
+
     def __new__(cls, *args, **kwargs):
         "Create instance of Client class depending on selected network adapter"
         b = cls.__bases__
@@ -22,6 +27,8 @@ class Client(object):
 
 
 class Server(object):
+    "Class creating its instance based on selected :term:`network adapter`."
+
     def __new__(cls, *args, **kwargs):
         "Create instance of Server class depending on selected network adapter"
         b = cls.__bases__

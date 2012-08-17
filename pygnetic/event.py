@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+"""Module defining Pygame events."""
+
 __all__ = ('NETWORK',
            'NET_DISCONNECTED',
            'NET_CONNECTED',

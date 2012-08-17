@@ -1,30 +1,44 @@
+# -*- coding: utf-8 -*-
+"""Network library for Pygame."""
+
 import logging
 import message
-import syncobject
 import network
 import serialization
 from handler import Handler
 from network import Server, Client
 
+__version__ = '1.0'
 _logger = logging.getLogger(__name__)
 register = message.message_factory.register
 
 
 def init(events=False, event_val=1, logging_lvl=logging.INFO,
-         n_module=('enet',), s_module=('msgpack', 'json')):
+         n_module=('enet', 'socket'), s_module=('msgpack', 'json')):
     """Initialize network library.
 
-    events - allow sending Pygame events (default False)
-    event_val - set event ID as event_val + pygame.USEREVENT (default 1)
-    logging_lvl - level of logging messages (default logging.INFO, None to skip
-                  initializing logging module
-    n_module - string or list of strings with names of network
-              library adapters, first available will be used
-    s_module - string or list of strings with names of serialization
-                    library adapters, first available will be used
+    :param events: allow sending Pygame events (default False)
+    :param event_val:
+        set :const:`event.NETWORK` as
+        :const:`pygame.USEREVENT` + :attr:`event_val` (default: 1)
+    :param logging_lvl:
+        level of logging messages (default :const:`logging.INFO`
+        (see: :ref:`logging-basic-tutorial`), None to skip initializing
+        logging module)
+    :param n_module:
+        name(s) of network library, first available will be used
+        (default: ['enet', 'socket'])
+    :type n_module: string or list of strings
+    :param s_module:
+        name(s) of serialization library, first available will be used
+        (default: ['msgpack', 'json'])
+    :type s_module: string or list of strings
+    :return: True if initialization ended with success
 
-    Note: Because of the dynamic loading of network library adapter, Client,
-        Server and State classes will only be available after initialization.
+    .. note::
+        Because of the dynamic loading of network library adapter,
+        :class:`Client` and :class:`Server` classes will only be
+        available after initialization.
     """
     global _network_module, _serialization_module
     if logging_lvl is not None:
@@ -37,13 +51,16 @@ def init(events=False, event_val=1, logging_lvl=logging.INFO,
             network._selected_adapter.__name__.split('.')[-1])
     else:
         _logger.critical("Can't find any network module")
+        return False
     serialization.select_adapter(s_module)
     if serialization._selected_adapter is not None:
         _logger.info("Using %s",
             serialization._selected_adapter.__name__.split('.')[-1])
     else:
         _logger.critical("Can't find any serialization module")
+        return False
     if events:
         _logger.info("Enabling pygame events")
         import event
         event.init(event_val)
+    return True

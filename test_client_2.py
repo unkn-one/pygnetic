@@ -1,6 +1,6 @@
 import random
 import logging
-import pygame_network as net
+import pygnetic as net
 
 
 class EchoHandler(net.Handler):

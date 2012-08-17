@@ -1,26 +1,16 @@
+# -*- coding: utf-8 -*-
+"""Module containing MessageFactory and predefined messages"""
+
 import logging
 from collections import namedtuple
 from weakref import WeakKeyDictionary, WeakValueDictionary
 import serialization
 
-__all__ = ('MessageFactory', 'MessageError')
 _logger = logging.getLogger(__name__)
 
 
-class MessageError(Exception):
-    pass
-
-
 class MessageFactory(object):
-    """Class allowing to register new message types and pack/unpack them.
-
-    example:
-        chat_msg = MessageFactory.register('chat_msg', ('player', 'msg'))
-        data = MessageFactory.pack(chat_msg('Tom', 'Test message'))
-        received_msg = MessageFactory.unpack(data)
-        player = received_msg.player
-        msg = received_msg.msg
-    """
+    """Class allowing to register new message types and pack/unpack them."""
     def __init__(self):
         self._message_names = {}  # mapping name -> message
         self._message_types = WeakValueDictionary()  # mapping type_id -> message
@@ -30,22 +20,16 @@ class MessageFactory(object):
         self._hash = None
 
     def register(self, name, field_names=tuple(), **kwargs):
-        """Register new message type
+        """Register new message type.
 
-        MessageFactory.register(name, field_names[, **kwargs]): return class
-
-        name - name of message class
-        field_names - names of message fields
-        args - additional arguments for sending message
-
-        Warning: All packets must be registered in THE SAME ORDER in client and
-        server, BEFORE creating any connection.
-
-        Returns namedtuple class.
+        :param name: name of message class
+        :param field_names: list of names of message fields
+        :param kwargs: additional keyword arguments for send method
+        :return: message class (namedtuple)
         """
         if self._frozen == True:
-            raise MessageError("Can't register new messages after "
-                               "connection establishment")
+            _logger.warning("Can't register new messages after connection "
+                            "establishment")
         type_id = self._type_id_cnt = self._type_id_cnt + 1
         packet = namedtuple(name, field_names)
         self._message_names[name] = packet
@@ -54,13 +38,10 @@ class MessageFactory(object):
         return packet
 
     def pack(self, message):
-        """Pack data to string
+        """Pack data to string.
 
-        MessageFactory.pack(packet_id, packet_obj): return string
-
-        message - object of class created by register
-
-        Returns message packed in string, ready to send.
+        :param message: object of class created by register
+        :return: string
         """
         type_id = self._message_params[message.__class__][0]
         message = (type_id,) + message
@@ -69,11 +50,16 @@ class MessageFactory(object):
         return data
 
     def set_frozen(self):
-        """Disable ability to register new messages to allow generation of hash
+        """Disable ability to register new messages to allow generation
+        of hash.
         """
         self._frozen = True
 
     def reset_context(self, context):
+        """Prepares object to behave as context for stream unpacking.
+
+        :param context: object which will be prepared
+        """
         context._unpacker = serialization.unpacker()
 
     def _process_message(self, message):
@@ -86,11 +72,10 @@ class MessageFactory(object):
             _logger.error('Message unpacking error: %s', message)
 
     def unpack(self, data):
-        """Unpack message from string
+        """Unpack message from string.
 
-        MessageFactory.unpack(data): return message
-
-        data - packed message data as a string
+        :param data: packed message data as a string
+        :return: message
         """
         _logger.debug("Unpacking message (length: %d)", len(data))
         try:
@@ -102,11 +87,11 @@ class MessageFactory(object):
         return self._process_message(message)
 
     def unpack_all(self, data, context):
-        """Unpack all data from string and buffer, return message generator
+        """Feed unpacker with data from stream and unpack all messages.
 
-        MessageFactory.unpack(data): return message generator
-
-        data - packed data as a string
+        :param data: packed message(s) data as a string
+        :param context: object previously prepared with :meth:`reset_context`
+        :return: iterator over messages
         """
         _logger.debug("Unpacking data (length: %d)", len(data))
         context._unpacker.feed(data)
@@ -119,40 +104,35 @@ class MessageFactory(object):
             return
 
     def get_by_name(self, name):
-        """Returns message class with given name
+        """Returns message class with given name.
 
-        MessageFactory.get_by_name(name): return class
-
-        name - name of message
-
-        Returns namedtuple class.
+        :param name: name of message
+        :return: message class (namedtuple)
         """
         return self._message_names[name]
 
     def get_by_type(self, type_id):
-        """Returns message class with given type_id
+        """Returns message class with given type_id.
 
-        MessageFactory.get_by_type(name): return class
-
-        type_id - type identifier of message
-
-        Returns namedtuple class.
+        :param type_id: type identifier of message
+        :return: message class (namedtuple)
         """
         return self._message_types[type_id]
 
-    def get_params(self, message):
-        """Return tuple containing type_id, and sending keyword args
+    def get_params(self, message_cls):
+        """Return tuple containing type_id, and sending keyword arguments
 
-        MessageFactory.get_params(message): return (int, dict)
-
-        message - message class created by register
+        :param message_cls: message class created by register
+        :return: int, dict
         """
-        return self._message_params[message]
+        return self._message_params[message_cls]
 
     def get_hash(self):
         """Calculate and return hash.
 
         Hash depends on registered messages and used serializing library.
+
+        :return: int
         """
         if self._frozen:
             if self._hash is None:
@@ -171,8 +151,8 @@ class MessageFactory(object):
 
 
 message_factory = MessageFactory()
-update_remoteobject = message_factory.register('update_remoteobject', (
-    'type_id',
-    'obj_id',
-    'variables'
-), channel=1, flags=0)
+#update_remoteobject = message_factory.register('update_remoteobject', (
+#    'type_id',
+#    'obj_id',
+#    'variables'
+#), channel=1, flags=0)

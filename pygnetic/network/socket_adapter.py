@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+"""Module containing network adapter for socket (asyncore.dispacher)."""
+
 import logging
 import socket
 import struct
@@ -8,22 +11,23 @@ from .. import connection, server, client
 _logger = logging.getLogger(__name__)
 _connect_struct = struct.Struct('!I')
 
+
 class Dispacher(asyncore.dispatcher, object):
     pass
 
+
 class Connection(connection.Connection, Dispacher):
-    __send = asyncore.dispatcher.send
     # maximum amount of data received / sent at once
     recv_buffer_size = 4096
 
     def __init__(self, parent, socket, message_factory, *args, **kwargs):
         super(Connection, self).__init__(
-            parent, message_factory, # params for base_adapter.Connection
-            socket, None, # params for asyncore.dispatcher
+            parent, socket, message_factory,
+            socket, None,
             * args, **kwargs)
         #self.send_queue = deque()
         self.send_buffer = bytearray()
-        self.recv_buffer = bytearray(b'\0' * self.recv_buffer_size)
+        #self.recv_buffer = bytearray(b'\0' * self.recv_buffer_size)
 
     def _send_data(self, data, **kwargs):
         self.send_buffer.extend(data)
@@ -76,7 +80,7 @@ class Connection(connection.Connection, Dispacher):
         self._connect()
 
     def handle_close(self):
-        self._disconnect()
+        self.parent._disconnect(self.socket.fileno())
         self.close()
 
     def log_info(self, message, type='info'):
@@ -113,7 +117,8 @@ class Server(server.Server, Dispacher):
             sock.settimeout(0.5)  # TODO: sth better?
             mf_hash = _connect_struct.unpack(sock.recv(4))[0]
             sock.setblocking(0)
-            self._accept(mf_hash, sock, self._fileno, addr)
+            if not self._accept(Connection, sock, addr, self._fileno, mf_hash):
+                sock.close()
 
     def update(self, timeout=0):
         asyncore.loop(timeout / 1000, False, None, 1)

@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+"""
+Module containing base class for adapters representing network connections.
+"""
+
 import re
 import logging
 from weakref import proxy
@@ -11,24 +16,23 @@ _logger = logging.getLogger(__name__)
 class Connection(object):
     """Class allowing to send messages
 
-    It's created by by Client or Server, shouldn't be created manually.
+    :param parent: parent :class:`~.client.Client` or :class:`~.server.Server`
+    :param conn_obj: connection object
+    :param message_factory: :class:`~.message.MessageFactory` object
+
+    .. note::
+        It's created by :class:`~.client.Client` or :class:`~.server.Server`
+        and shouldn't be created manually.
 
     Sending is possible in two ways:
-    * using net_<message_name> methods, where <message_name>
-      is name of message registered in MessageFactory
-    * using send method with message as argument
 
-    Attributes:
-        parent - proxy to Client / Server instance
-        address - connection address
-        connected - True if connected
-        data_sent - amount of data sent
-        data_received - amount of data received
-        messages_sent - amount of messages sent
-        messages_received - amount of messages received
+    * using :meth:`net_message_name` methods, where ``message_name``
+      is name of message registered in :class:`~.message.MessageFactory`
+    * using :meth:`send` method with message as argument
     """
+    address = ('', '')
 
-    def __init__(self, parent, message_factory, *args, **kwargs):
+    def __init__(self, parent, conn_obj, message_factory, *args, **kwargs):
         super(Connection, self).__init__(*args, **kwargs)
         self.parent = proxy(parent)
         self.message_factory = message_factory
@@ -56,15 +60,13 @@ class Connection(object):
                                  (type(self).__name__, name))
 
     def send(self, message, *args, **kwargs):
-        """Send message to remote host
+        """Send message to remote host.
 
-        Connection.send(message, *args, **kwargs): return int
-
-        message - class created by MessageFactory.register or message name
-
-        args and kwargs are used to initialize message object.
-        Returns message id which can be used to retrieve response from
-        Pygame event queue if sending was successful.
+        :param message:
+            class created by :meth:`~.message.MessageFactory.register`
+            or message name
+        :param args: parameters used to initialize message object
+        :param kwargs: keyword parameters used to initialize message object
         """
         if isinstance(message, basestring):
             message = self.message_factory.get_by_name(message)
@@ -86,7 +88,9 @@ class Connection(object):
         return self._send_data(data, **params)
 
     def _receive(self, data, **kwargs):
+        self.data_received += len(data)
         for message in self.message_factory.unpack_all(data, self):
+            self.messages_received += 1
             name = message.__class__.__name__
             _logger.info('Received %s message from %s', name, self.address)
             event.received(self, message)
@@ -106,20 +110,16 @@ class Connection(object):
             h.on_disconnect()
 
     def disconnect(self, *args):
-        """Request a disconnection."""
+        """Request a disconnection.
+
+        :param args: additional arguments for :term:`network adapter`
+        """
         pass
 
     def add_handler(self, handler):
         """Add new Handler to handle messages.
 
-        Connection.add_handler(handler)
-
-        handler - instance of Receiver subclass
+        :param handler: instance of :class:`~.handler.Handler` subclass
         """
         self.handlers.append(handler)
         handler.connection = proxy(self)
-
-    @property
-    def address(self):
-        """Connection address."""
-        return '', ''

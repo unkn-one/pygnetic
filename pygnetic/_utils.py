@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import logging
 from importlib import import_module
 

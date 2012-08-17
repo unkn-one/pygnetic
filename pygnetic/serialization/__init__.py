@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+"""Serialization adapters."""
+
 from .. import _utils
 
 _selected_adapter = None

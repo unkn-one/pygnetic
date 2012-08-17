@@ -1,5 +1,9 @@
+# -*- coding: utf-8 -*-
+"""Module containing base classes for synchronized objects."""
+
 from weakref import WeakKeyDictionary
 from message import *
+
 
 class Mode(object):
     AUTO = 0

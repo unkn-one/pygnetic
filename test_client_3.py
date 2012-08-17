@@ -2,7 +2,7 @@ import random
 import logging
 import pygame
 from pygame.locals import KEYDOWN, QUIT, K_ESCAPE, K_SPACE, K_l
-import pygame_network as net
+import pygnetic as net
 
 
 def message_status(screen, position, messages):
