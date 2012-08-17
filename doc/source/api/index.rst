@@ -1,5 +1,5 @@
-pygnetic Package
-================
+:mod:`pygnetic` Package
+=======================
 
 .. automodule:: pygnetic
 
