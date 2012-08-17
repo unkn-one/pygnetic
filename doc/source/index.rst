@@ -4,6 +4,17 @@ pygnetic --- Easy networking in Pygame
 **pygnetic** is a library designed to help in the development of
 network games and applications in `Pygame <http://www.pygame.org>`_.
 
+
+Features
+--------
+
+* Two approaches to handle network events
+   * generating events in pygame queue
+   * using handler classes
+* Efficient packaging of data through the message system
+* Support for multiple network and serialization libraries
+
+
 Contents
 --------
 
@@ -12,7 +23,18 @@ Contents
    :glob:
 
    api/index
+   examples
    license
+
+
+Installation
+------------
+
+**pygnetic** can be installed with
+`windows installer <http://pypi.python.org/pypi/pygnetic/#downloads>`_
+or with `pip <http://www.pip-installer.org>`_::
+
+   pip install pygnetic
 
 Optional requirements
 ---------------------
@@ -21,38 +43,13 @@ Optional requirements
 * `pyenet <http://code.google.com/p/pyenet/>`_
 
 
-Installation
-------------
+Resources
+---------
 
-TODO
-
-Usage
------
-
-TODO
-
-
-Why should I use this module instead of X ?
--------------------------------------------
-
-TODO
-
-
-Support
--------
-
-TODO
-
-
-Development
------------
-
-The source code is hosted on
-`Bitbucket <https://bitbucket.org/bluex/pygnetic>`_::
-
-   hg clone https://bitbucket.org/bluex/pygnetic
-
-Development blog can be found here: http://pygame-networking.blogspot.com
+* Package on PyPI -- http://pypi.python.org/pypi/pygnetic
+* Repository on Bitbucket -- https://bitbucket.org/bluex/pygnetic
+* Documentation -- http://pygnetic.readthedocs.org
+* Development blog -- http://pygame-networking.blogspot.com
 
 
 Credits

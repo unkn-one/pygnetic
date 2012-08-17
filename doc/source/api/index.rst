@@ -160,13 +160,17 @@ pygnetic Package
                       print 'received:', e.message
    
    .. note::
+      
+      To use events you need to enable them with :func:`.init`
+   
+   .. warning::
    
       If you plan to change value of :const:`NETWORK` with
       :func:`.init`, then use:: 
          
          import pygnetic.event as event
          # rather than
-         # from pygnetic.event import NETWORK # wrong
+         # from pygnetic.event import NETWORK
 
 
 :mod:`handler` Module

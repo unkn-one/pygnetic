@@ -47,7 +47,7 @@ def main():
     pygame.display.flip()
 
     # Network init
-    net.init(events=True, logging_lvl=logging.DEBUG, n_module='socket')  # enable Pygame events
+    net.init(events=True, logging_lvl=logging.DEBUG)  # enable Pygame events
     echo = net.register('echo', ('msg', 'msg_id'))
     client = net.Client()
     connection = None
@@ -68,7 +68,7 @@ def main():
                             connection.disconnect()
                             connection_status(screen, (140, 38), False)
                     else:
-                        connection = client.connect("localhost", 54301)
+                        connection = client.connect("localhost", 1337)
                         connection_status(screen, (140, 38), False)
                 if e.key == K_l:
                     limit = not limit
