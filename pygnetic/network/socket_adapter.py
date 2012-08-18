@@ -121,7 +121,7 @@ class Server(server.Server, Dispacher):
                 sock.close()
 
     def update(self, timeout=0):
-        asyncore.loop(timeout / 1000, False, None, 1)
+        asyncore.loop(timeout / 1000.0, False, None, 1)
 
 
 class Client(client.Client):
@@ -139,4 +139,4 @@ class Client(client.Client):
         return conn, conn.socket.fileno()
 
     def update(self, timeout=0):
-        asyncore.loop(timeout / 1000, False, self.conn_map, 1)
+        asyncore.loop(timeout / 1000.0, False, self.conn_map, 1)
