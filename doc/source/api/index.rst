@@ -213,7 +213,7 @@
       
       Default instance of :class:`MessageFactory` used by other modules.
    
-   .. autoclass:: MessageFactory
+   .. autoclass:: MessageFactory([s_adapter])
    
       Example::
       

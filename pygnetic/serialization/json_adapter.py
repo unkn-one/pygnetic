@@ -24,6 +24,12 @@ class JSONDecoder(json.JSONDecoder):
     next = decode
 
 
+def unpack(*args):
+    try:
+        return json.loads(*args)
+    except ValueError:
+        pass
+
+
 pack = json.dumps
-unpack = json.loads
 unpacker = JSONDecoder

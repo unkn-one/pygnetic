@@ -46,16 +46,16 @@ def init(events=False, event_val=1, logging_lvl=logging.INFO,
                             format='%(asctime)-8s %(levelname)-8s %(message)s',
                             datefmt='%H:%M:%S')
     network.select_adapter(n_module)
-    if network._selected_adapter is not None:
+    if network.selected_adapter is not None:
         _logger.info("Using %s",
-            network._selected_adapter.__name__.split('.')[-1])
+            network.selected_adapter.__name__.split('.')[-1])
     else:
         _logger.critical("Can't find any network module")
         return False
     serialization.select_adapter(s_module)
-    if serialization._selected_adapter is not None:
+    if serialization.selected_adapter is not None:
         _logger.info("Using %s",
-            serialization._selected_adapter.__name__.split('.')[-1])
+            serialization.selected_adapter.__name__.split('.')[-1])
     else:
         _logger.critical("Can't find any serialization module")
         return False
