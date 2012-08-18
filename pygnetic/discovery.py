@@ -101,7 +101,6 @@ class DiscoveryServer(SocketServer.UDPServer, object):
             self.c_stop.wait(self.cleaner_period)
 
 
-
 class DiscoveryClient(object):
     max_packet_size = 8192
 
@@ -110,6 +109,12 @@ class DiscoveryClient(object):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.response = None
         self.oid = 0
+        self.u_stop = threading.Event()
+        self.u_thread = threading.Thread(target=self.updater)
+        self.u_thread.daemon = True
+
+    def __del__(self):
+        self.u_stop.set()
 
     def _send_msg(self, message, *args):
         oid = self.oid = self.oid + 1
@@ -131,6 +136,10 @@ class DiscoveryClient(object):
                 _logger.info('Received response from %s', address)
             else:
                 _logger.info('Unexpected data from %s', address)
+
+    def updater(self):
+        while not self.u_stop.is_set():
+            self.update(1000)
 
     def close(self):
         self.socket.close()
