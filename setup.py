@@ -12,7 +12,7 @@ setup(
     author_email='bluex0@gmail.com',
     url='https://bitbucket.org/bluex/pygame_network',
     keywords='pygame network networking',
-    packages=['pygnetic', 'pygnetic.network', 'pygnetic.serialization', 'pygnetic.discovery'],
+    packages=['pygnetic', 'pygnetic.network', 'pygnetic.serialization'],
     license=open('LICENSE.txt').readline().strip(),
     long_description=open('README.txt').read(),
     classifiers=[
