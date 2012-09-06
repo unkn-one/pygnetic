@@ -49,10 +49,10 @@ class Connection(connection.Connection):
 
 
 class Server(server.Server):
-    def __init__(self, host='', port=0, con_limit=4, *args, **kwargs):
-        super(Server, self).__init__(host, port, con_limit, *args, **kwargs)
+    def __init__(self, host='', port=0, conn_limit=4, *args, **kwargs):
+        super(Server, self).__init__(host, port, conn_limit, *args, **kwargs)
         host = enet.Address(host, port)
-        self.host = enet.Host(host, con_limit, *args, **kwargs)
+        self.host = enet.Host(host, conn_limit, *args, **kwargs)
         self._peer_cnt = 0
 
     def update(self, timeout=0):

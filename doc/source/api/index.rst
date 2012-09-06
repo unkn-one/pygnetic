@@ -194,6 +194,7 @@
       
          Called when ``message_name`` message is received
          
+         :param message: received message
          :param kwargs:
             additional keyword arguments from :term:`network adapter`
       
@@ -295,10 +296,10 @@ Small FAQ
    The only drawback of this method is the need to register the same messages
    in the same order in client and server.
 
-**Why order of creating messages is important?**
+**Why order of registration messages is important?**
    As You may noticed in previous example, there is no string with type of
    message in packed data. That's because type is encoded as integer,
-   depending on order of creation.
+   depending on order of registration.
 
 
 Glossary

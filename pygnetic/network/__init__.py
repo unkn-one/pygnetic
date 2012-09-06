@@ -21,6 +21,8 @@ class Client(object):
     def __new__(cls, *args, **kwargs):
         "Create instance of Client class depending on selected network adapter"
         b = cls.__bases__
+        if selected_adapter is None:
+            raise AttributeError("Client adapter is not selected")
         if Client in b:  # creation by inheritance
             i = b.index(Client) + 1
             cls.__bases__ = b[:i] + (selected_adapter.Client,) + b[i:]
@@ -36,6 +38,8 @@ class Server(object):
     def __new__(cls, *args, **kwargs):
         "Create instance of Server class depending on selected network adapter"
         b = cls.__bases__
+        if selected_adapter is None:
+            raise AttributeError("Client adapter is not selected")
         if Server in b:  # creation by inheritance
             i = b.index(Server) + 1
             cls.__bases__ = b[:i] + (selected_adapter.Server,) + b[i:]

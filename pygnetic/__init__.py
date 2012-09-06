@@ -2,6 +2,7 @@
 """Network library for Pygame."""
 
 import logging
+import event
 import message
 import network
 import serialization
@@ -13,14 +14,14 @@ _logger = logging.getLogger(__name__)
 register = message.message_factory.register
 
 
-def init(events=False, event_val=1, logging_lvl=logging.INFO,
+def init(events=False, event_val=None, logging_lvl=logging.INFO,
          n_module=('enet', 'socket'), s_module=('msgpack', 'json')):
     """Initialize network library.
 
     :param events: allow sending Pygame events (default False)
     :param event_val:
         set :const:`event.NETWORK` as
-        :const:`pygame.USEREVENT` + :attr:`event_val` (default: 1)
+        :const:`pygame.USEREVENT` + :attr:`event_val` (default: None)
     :param logging_lvl:
         level of logging messages (default :const:`logging.INFO`
         (see: :ref:`logging-basic-tutorial`), None to skip initializing
@@ -61,6 +62,5 @@ def init(events=False, event_val=1, logging_lvl=logging.INFO,
         return False
     if events:
         _logger.info("Enabling pygame events")
-        import event
         event.init(event_val)
     return True
