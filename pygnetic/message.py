@@ -115,25 +115,25 @@ class MessageFactory(object):
         """Returns message class with given name.
 
         :param name: name of message
-        :return: message class (namedtuple)
+        :return: message class (namedtuple) or None if not found
         """
-        return self._message_names[name]
+        return self._message_names.get(name)
 
     def get_by_type(self, type_id):
         """Returns message class with given type_id.
 
         :param type_id: type identifier of message
-        :return: message class (namedtuple)
+        :return: message class (namedtuple) or None if not found
         """
-        return self._message_types[type_id]
+        return self._message_types.get(type_id)
 
     def get_params(self, message_cls):
         """Return tuple containing type_id, and sending keyword arguments
 
         :param message_cls: message class created by register
-        :return: int, dict
+        :return: int, dict or None if not found
         """
-        return self._message_params[message_cls]
+        return self._message_params.get(message_cls)
 
     def get_hash(self):
         """Calculate and return hash.
