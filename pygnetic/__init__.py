@@ -2,6 +2,7 @@
 """Network library for Pygame."""
 
 import logging
+import discovery
 import event
 import message
 import network

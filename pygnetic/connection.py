@@ -74,7 +74,7 @@ class Connection(object):
 
     def _send_message(self, message, *args, **kwargs):
         name = message.__name__
-        params = self.message_factory.get_params(message)[1]
+        params = self.message_factory.get_params(message)
         try:
             message_ = message(*args, **kwargs)
         except TypeError, e:

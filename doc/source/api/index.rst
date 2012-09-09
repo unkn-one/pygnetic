@@ -238,6 +238,8 @@
       
       .. automethod:: get_params
       
+      .. automethod:: get_type_id
+      
       .. automethod:: pack
       
       .. automethod:: register(name[, field_names[, **kwargs]])

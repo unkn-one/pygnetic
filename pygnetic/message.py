@@ -39,6 +39,7 @@ class MessageFactory(object):
         if self._frozen == True:
             _logger.warning("Can't register new messages after connection "
                             "establishment")
+            return
         type_id = self._type_id_cnt = self._type_id_cnt + 1
         packet = namedtuple(name, field_names)
         self._message_names[name] = packet
@@ -115,25 +116,46 @@ class MessageFactory(object):
         """Returns message class with given name.
 
         :param name: name of message
-        :return: message class (namedtuple) or None if not found
+        :return: message class (namedtuple)
         """
-        return self._message_names.get(name)
+        try:
+            return self._message_names[name]
+        except KeyError:
+            raise ValueError('Unknown message name')
+
 
     def get_by_type(self, type_id):
         """Returns message class with given type_id.
 
         :param type_id: type identifier of message
-        :return: message class (namedtuple) or None if not found
+        :return: message class (namedtuple)
         """
-        return self._message_types.get(type_id)
+        try:
+            return self._message_types[type_id]
+        except KeyError:
+            raise ValueError('Unknown message type_id')
 
     def get_params(self, message_cls):
-        """Return tuple containing type_id, and sending keyword arguments
+        """Return dict containing sending keyword arguments
 
         :param message_cls: message class created by register
-        :return: int, dict or None if not found
+        :return: dict
         """
-        return self._message_params.get(message_cls)
+        try:
+            return self._message_params[message_cls][1]
+        except KeyError:
+            raise ValueError('Unregistered message')
+
+    def get_type_id(self, message_cls):
+        """Return message class type_id
+
+        :param message_cls: message class created by register
+        :return: int
+        """
+        try:
+            return self._message_params[message_cls][1]
+        except KeyError:
+            raise ValueError('Unregistered message')
 
     def get_hash(self):
         """Calculate and return hash.

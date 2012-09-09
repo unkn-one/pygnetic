@@ -30,7 +30,7 @@ class Errors(object):
     TIMEOUT = 1
 
 
-class ServerHandler(SocketServer.BaseRequestHandler):
+class ServerHandler(SocketServer.BaseRequestHandler, object):
     def handle(self):
         data, socket = self.request
         _logger.debug('Received data: %r', data)
@@ -40,7 +40,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
         name = message.__class__.__name__
         _logger.info('Received %s message from %s', name, self.client_address)
         ret_val, err = getattr(self, 'net_' + name)(message)
-        mid = message_factory.get_params(message.__class__)[0]
+        mid = message_factory.get_type_id(message.__class__)
         ack_data = message_factory.pack(response(message.oid, mid, ret_val, err))
         cnt = socket.sendto(ack_data, self.client_address)
         _logger.info('Sent response to %s', self.client_address)
