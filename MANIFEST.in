@@ -1,2 +1,2 @@
-include *.txt
-prune doc
+include *.txt *.rst
+prune .*

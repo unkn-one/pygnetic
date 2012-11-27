@@ -1,7 +1,8 @@
 ﻿#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from distutils.core import setup
+#from distutils.core import setup
+from setuptools import setup
 import pygnetic
 
 setup(
@@ -15,6 +16,7 @@ setup(
     packages=['pygnetic', 'pygnetic.network', 'pygnetic.serialization'],
     license=open('LICENSE.txt').readline().strip(),
     long_description=open('README.txt').read(),
+    test_suite='tests',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Environment :: Console',

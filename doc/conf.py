@@ -16,7 +16,7 @@ import sys, os
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('../..'))
+sys.path.insert(0, os.path.abspath('..'))
 
 # -- General configuration -----------------------------------------------------
 
@@ -51,9 +51,9 @@ copyright = u'2012, Szymon Wróblewski'
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
-from pygnetic import __version__
+import pygnetic
 import distutils.version
-v = distutils.version.StrictVersion(__version__)
+v = distutils.version.StrictVersion(pygnetic.__version__)
 # The short X.Y version.
 version = '.'.join(map(str, v.version[:2]))
 # The full version, including alpha/beta/rc tags.
