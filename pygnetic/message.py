@@ -14,7 +14,7 @@ class MessageFactory(object):
 
     :param s_adapter:
         :term:`serialization adapter`
-        (default: None - library selected with :func:`.init`)
+        (default: None - module selected with :func:`.init`)
     """
     def __init__(self, s_adapter=None):
         self._message_names = {}  # name -> message
@@ -53,7 +53,7 @@ class MessageFactory(object):
         :param message: object of class created by register
         :return: string
         """
-        type_id = self._message_params[message.__class__][0]
+        type_id = self.get_type_id(message.__class__)
         message = (type_id,) + message
         data = self.s_adapter.pack(message)
         _logger.debug("Packing message (length: %d)", len(data))
@@ -153,7 +153,7 @@ class MessageFactory(object):
         :return: int
         """
         try:
-            return self._message_params[message_cls][1]
+            return self._message_params[message_cls][0]
         except KeyError:
             raise ValueError('Unregistered message')
 
