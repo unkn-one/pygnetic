@@ -135,7 +135,7 @@ class Client(client.Client):
         # disable Nagle buffering algorithm
         conn.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         conn.connect((host, port))
-        conn.socket.send(_connect_struct.pack(message_factory.get_hash()))
+        conn._send_data(_connect_struct.pack(message_factory.get_hash()))
         return conn, conn.socket.fileno()
 
     def update(self, timeout=0):
