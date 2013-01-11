@@ -15,7 +15,7 @@ setup(
     keywords='pygame network networking',
     packages=['pygnetic', 'pygnetic.network', 'pygnetic.serialization'],
     license=open('LICENSE.txt').readline().strip(),
-    long_description=open('README.txt').read(),
+    long_description=open('README.rst').read(),
     test_suite='tests',
     classifiers=[
         'Development Status :: 3 - Alpha',
