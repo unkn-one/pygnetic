@@ -1,49 +1,66 @@
 # -*- coding: utf-8 -*-
 """Network adapters."""
 
+import types
 from .. import _utils
+from .. import client
+from .. import server
 
 selected_adapter = None
 
 
 def select_adapter(names):
+    """Select first found adapter
+
+    :param names: - string or list of strings with names of libraries
+    :return: adapter module
+    """
     global selected_adapter
     selected_adapter = _utils.find_adapter(__name__, names)
+    return selected_adapter
 
+def get_adapter(names):
+    """Return adapter
 
-def get_adapter(name):
-    return _utils.find_adapter(__name__, name)
+    :param names: - string or list of strings with names of libraries
+    :return: adapter module
+    """
+    return _utils.find_adapter(__name__, names)
 
 
 class Client(object):
-    "Class creating its instance based on selected :term:`network adapter`."
+    """Proxy class for selected :term:`network adapter`."""
+    _adapter = None
 
-    def __new__(cls, *args, **kwargs):
-        "Create instance of Client class depending on selected network adapter"
-        b = cls.__bases__
-        if selected_adapter is None:
+    def __init__(self, *args, **kwargs):
+        adapter = kwargs.pop('adapter', self._adapter)
+        if adapter is not None:
+            if not isinstance(adapter, client.Client):
+                adapter = get_adapter(adapter).Client(*args, **kwargs)
+        elif selected_adapter is not None:
+            adapter = selected_adapter.Client(*args, **kwargs)
+        else:
             raise AttributeError("Client adapter is not selected")
-        if Client in b:  # creation by inheritance
-            i = b.index(Client) + 1
-            cls.__bases__ = b[:i] + (selected_adapter.Client,) + b[i:]
-            return super(cls, cls).__new__(cls, *args, **kwargs)
-        else:  # direct object creation
-            # can't assign to __bases__ - bugs.python.org/issue672115
-            return selected_adapter.Client(*args, **kwargs)
+        self._adapter = adapter
+
+    def __getattr__(self, name):
+        return getattr(self._adapter, name)
 
 
 class Server(object):
-    "Class creating its instance based on selected :term:`network adapter`."
+    """Proxy class for selected :term:`network adapter`."""
+    _adapter = None
 
-    def __new__(cls, *args, **kwargs):
-        "Create instance of Server class depending on selected network adapter"
-        b = cls.__bases__
-        if selected_adapter is None:
-            raise AttributeError("Client adapter is not selected")
-        if Server in b:  # creation by inheritance
-            i = b.index(Server) + 1
-            cls.__bases__ = b[:i] + (selected_adapter.Server,) + b[i:]
-            return super(Server, cls).__new__(cls, *args, **kwargs)
-        else:  # direct object creation
-            # can't assign to __bases__ - bugs.python.org/issue672115
-            return selected_adapter.Server(*args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        adapter = kwargs.pop('adapter', self._adapter)
+        if adapter is not None:
+            if not isinstance(adapter, server.Server):
+                adapter = get_adapter(adapter).Server(*args, **kwargs)
+        elif selected_adapter is not None:
+            adapter = selected_adapter.Server(*args, **kwargs)
+        else:
+            raise AttributeError("Server adapter is not selected")
+        self._adapter = adapter
+
+    def __getattr__(self, name):
+        return getattr(self._adapter, name)
