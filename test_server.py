@@ -13,9 +13,10 @@ class EchoHandler(net.Handler):
 
 
 def main():
-    net.init(logging_lvl=logging.DEBUG)
+    net.init(logging_lvl=logging.DEBUG, n_adapter='enet')
     net.register('echo', ('msg', 'msg_id'))
-    server = net.Server(port=1337)
+    #server = net.Server(port=1337, handler=EchoHandler)
+    server = net.Server(port=1337, n_adapter='socket')
     server.handler = EchoHandler
     logging.info('Listening')
     try:

@@ -3,18 +3,16 @@
 
 .. automodule:: pygnetic
 
-   .. autofunction:: init([events[, event_val[, logging_lvl[, n_module[, s_module]]]]])
-   
-   .. autofunction:: register(name[, field_names[, **kwargs]])
-   
-      .. note:: It uses :data:`.message.message_factory`
-      
+   .. autofunction:: init([events, event_val, logging_lvl, n_adapter, s_adapter])
+
+   .. autofunction:: register([name, field_names, **kwargs])
+
    .. autoclass:: Client
    
    .. autoclass:: Server
    
-   .. class :: Handler
-   
+   .. class:: Handler
+
       :class:`handler.Handler` binding.
    
    
@@ -23,7 +21,7 @@
 
 .. automodule:: pygnetic.client
     
-   .. autoclass:: Client([conn_limit, [*args, **kwargs]])
+   .. autoclass:: Client([conn_limit, message_factory, *args, **kwargs])
     
       Example::
       
@@ -32,12 +30,12 @@
          while True:
             client.update()
             
-      .. data:: message_factory
+      .. attribute:: message_factory
          
-         Default :class:`~.message.MessageFactory` object used for new
+         :class:`~.message.MessageFactory` instance used for new
          connections. (default: :data:`.message.message_factory`)
       
-      .. automethod:: connect(host, port[, message_factory[, **kwargs]])
+      .. automethod:: connect(host, port[, message_factory, **kwargs])
       
       .. automethod:: update(self[, timeout])
 
@@ -48,6 +46,16 @@
 .. automodule:: pygnetic.connection
     
    .. autoclass:: Connection(parent, conn_obj, message_factory)
+
+      .. note::
+         It's created by :class:`~.client.Client` or :class:`~.server.Server`
+         and shouldn't be created manually.
+
+      Sending is possible in two ways:
+
+      * using :meth:`net_message_name` methods, where ``message_name``
+        is name of message registered in :class:`~.message.MessageFactory`
+      * using :meth:`send` method with message as argument
       
       Example::
       
@@ -90,7 +98,7 @@
       
       .. automethod:: disconnect([*args])
       
-      .. method:: net_message_name([\*args, \*\*kwargs])
+      .. method:: net_message_name([*args, **kwargs])
 
          Send ``message_name`` messagge to remote host.
          
@@ -182,13 +190,13 @@
    
       .. attribute:: connection
       
-         :func:`Proxy <weakref.proxy>` to :class:`~.connection.Connection`
-         derived class instance
+         :func:`Proxy <weakref.proxy>` to instance of
+         :class:`~.connection.Connection` derived class
          
       .. attribute:: server
       
-         :func:`Proxy <weakref.proxy>` to :class:`~.server.Server`
-         derived class instance   
+         :func:`Proxy <weakref.proxy>` to instance of
+         :class:`~.server.Server` derived class
       
       .. method:: net_message_name(message[, **kwargs])
       
@@ -242,7 +250,7 @@
       
       .. automethod:: pack
       
-      .. automethod:: register(name[, field_names[, **kwargs]])
+      .. automethod:: register(name[, field_names, **kwargs])
       
       .. automethod:: reset_context
       
@@ -258,11 +266,22 @@
 
 .. automodule:: pygnetic.server
     
-   .. autoclass:: Server([host[, port[, conn_limit[, *args, **kwargs]]]])
+   .. autoclass:: Server([host, port, conn_limit, handler, message_factory, *args, **kwargs])
       
       .. attribute:: address
          
          Server address.
+
+      .. attribute:: handler
+
+         Class derived from :class:`~.handler.Handler`
+         used to handle incoming messages.
+         New instance is created for every new connection.
+
+      .. attribute:: message_factory
+
+         :class:`.MessageFactory` instance used for new
+         connections. (default: :data:`.message.message_factory`)
          
       .. automethod:: connections([exclude])
       
@@ -298,10 +317,52 @@ Small FAQ
    The only drawback of this method is the need to register the same messages
    in the same order in client and server.
 
-**Why order of registration messages is important?**
+**Why order of registration of messages is important?**
    As You may noticed in previous example, there is no string with type of
    message in packed data. That's because type is encoded as integer,
    depending on order of registration.
+
+**How can I change MessageFactory used in Client or Server?**
+   Class scope - every class instance will use it::
+
+      import pygnetic as net
+
+      mf = net.message.MessageFactory()
+      mf.register(...)
+
+      class Client(net.Client):
+         message_factory = mf
+
+      net.init()
+      client = Client()
+
+   Instance scope - only one instance will use it::
+
+      import pygnetic as net
+
+      mf = net.message.MessageFactory()
+      mf.register(...)
+
+      net.init()
+      client = net.Client(message_factory=mf)
+
+**How can I change adapter used to create Client or Server?**
+   Class scope - every class instance will use it::
+
+      import pygnetic as net
+
+      class Client(net.Client):
+         adapter = 'socket'
+
+      net.init()
+      client = Client()
+
+   Instance scope - only one instance will use it::
+
+      import pygnetic as net
+
+      net.init()
+      client = net.Client(adapter = 'enet')
 
 
 Glossary

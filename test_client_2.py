@@ -13,8 +13,6 @@ class EchoHandler(net.Handler):
     def net_echo(self, message, **kwargs):
         logging.info('Received message: %s', message)
         self.in_counter += 1
-        if self.in_counter == 10:
-            self.connection.disconnect()
 
     def update(self):
         if self.out_counter < 10 and self.connection.connected:
@@ -25,9 +23,9 @@ class EchoHandler(net.Handler):
 
 
 def main():
-    net.init(logging_lvl=logging.DEBUG)
+    net.init(logging_lvl=logging.DEBUG, n_adapter='enet')
     net.register('echo', ('msg', 'msg_id'))
-    client = net.Client()
+    client = net.Client(n_adapter='socket')
     connection = client.connect("localhost", 1337)
     handler = EchoHandler()
     connection.add_handler(handler)
@@ -37,7 +35,9 @@ def main():
             handler.update()
     except KeyboardInterrupt:
         pass
-
+    finally:
+        connection.disconnect()
+        client.update()
 
 if __name__ == '__main__':
     main()
